@@ -98,7 +98,7 @@
           class="flex h-full flex-col items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 p-4 text-white"
         >
           <h1 class="mb-4 text-3xl font-bold tracking-tight">gPhone</h1>
-          <p class="text-gray-400">Pixel 10 Pro XL Style</p>
+          <p class="text-gray-400">Coming soon...</p>
           <button
             class="mt-8 rounded-full bg-blue-400 px-6 py-3 font-semibold text-gray-900 transition-transform hover:scale-105 active:scale-95"
             onclick={closePhone}
