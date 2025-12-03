@@ -11,10 +11,10 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
-          cache: 'yarn'
+          node-version: '24.x'
+          cache: 'pnpm'
       - name: Install dependencies NUI
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Build Bundles
-        run: yarn build
+        run: pnpm build
 
