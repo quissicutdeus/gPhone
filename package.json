@@ -17,10 +17,19 @@
   "devDependencies": {
     "@citizenfx/client": "2.0.22934-1",
     "@citizenfx/server": "2.0.22934-1",
+    "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@tailwindcss/postcss": "^4.1.17",
+    "@tsconfig/svelte": "^5.0.6",
     "@types/node": "^24.10.1",
+    "autoprefixer": "^10.4.22",
     "cross-env": "^10.1.0",
     "esbuild": "^0.27.1",
+    "postcss": "^8.5.6",
     "rimraf": "^6.1.2",
-    "typescript": "^5.9.3"
+    "svelte": "^5.45.5",
+    "svelte-check": "^4.3.4",
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.6"
   }
 }

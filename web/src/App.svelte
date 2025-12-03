@@ -18,7 +18,14 @@
   };
 
   onMount(() => {
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closePhone();
+      }
+    };
+
     window.addEventListener("message", handleMessage);
+    window.addEventListener("keydown", handleKeydown);
 
     // Mock data for browser dev
     debugData([
@@ -37,6 +44,7 @@
 
     return () => {
       window.removeEventListener("message", handleMessage);
+      window.removeEventListener("keydown", handleKeydown);
     };
   });
 
