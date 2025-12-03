@@ -4,12 +4,16 @@
   import { fetchNui } from "./utils/fetchNui";
 
   let visible = false;
+  let currentTime = "00:00";
 
   // Handle NUI messages
   const handleMessage = (event: MessageEvent) => {
     const { action, data } = event.data;
     if (action === "setVisible") {
       visible = data;
+    } else if (action === "setTime") {
+      const { hours, minutes } = data;
+      currentTime = `${hours}:${minutes < 10 ? "0" + minutes : minutes}`;
     }
   };
 
@@ -21,6 +25,13 @@
       {
         action: "setVisible",
         data: true,
+      },
+      {
+        action: "setTime",
+        data: {
+          hours: 4,
+          minutes: 20,
+        },
       },
     ]);
 
@@ -61,7 +72,7 @@
         <div
           class="absolute top-0 z-20 flex w-full items-center justify-between px-8 pt-3 text-sm font-medium text-white"
         >
-          <span>9:41</span>
+          <span>{currentTime}</span>
           <div class="flex gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -73,7 +84,7 @@
                 d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"
               />
             </svg>
-            <span>100%</span>
+            <span>69%</span>
           </div>
         </div>
 
