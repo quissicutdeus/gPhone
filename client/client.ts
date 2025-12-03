@@ -34,6 +34,9 @@ RegisterCommand('togglePhone', () => {
   }
 }, false);
 
+// Register Key Mapping
+RegisterKeyMapping('togglePhone', 'Open Phone', 'keyboard', 'm');
+
 // NUI Callback to close phone
 RegisterNuiCallbackType('hideFrame');
 on('__cfx_nui:hideFrame', (_: any, cb: Function) => {
