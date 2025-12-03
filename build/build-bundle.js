@@ -1,10 +1,10 @@
-const esbuild = require("esbuild");
+import { build, context } from "esbuild";
 
-const IS_WATCH_MODE = process.env.IS_WATCH_MODE;
+const IS_WATCH_MODE = process.env.IS_WATCH_MODE === '1';
 
 const TARGET_ENTRIES = [
   {
-    target: "node16",
+    target: "node24",
     entryPoints: ["server/server.ts"],
     platform: "node",
     outfile: "./dist/server/server.js",
@@ -30,25 +30,41 @@ const buildBundle = async () => {
       const mergedOpts = { ...baseOptions, ...targetOpts };
 
       if (IS_WATCH_MODE) {
-        mergedOpts.watch = {
-          onRebuild(error) {
-            if (error)
-              console.error(
-                `[ESBuild Watch] (${targetOpts.entryPoints[0]}) Failed to rebuild bundle`
-              );
-            else
-              console.log(
-                `[ESBuild Watch] (${targetOpts.entryPoints[0]}) Sucessfully rebuilt bundle`
-              );
+        // --- NEW API FOR WATCH MODE ---
+        // We must define a plugin to replicate the old 'onRebuild' logging behavior
+        const watchLoggerPlugin = {
+          name: 'watch-logger',
+          setup(build) {
+            build.onEnd(result => {
+              if (result.errors.length > 0) {
+                console.error(
+                  `[ESBuild Watch] (${targetOpts.entryPoints[0]}) Failed to rebuild bundle`
+                );
+              } else {
+                console.log(
+                  `[ESBuild Watch] (${targetOpts.entryPoints[0]}) Successfully rebuilt bundle`
+                );
+              }
+            });
           },
         };
-      }
 
-      const { errors } = await esbuild.build(mergedOpts);
+        // Add the plugin to the options
+        mergedOpts.plugins = [watchLoggerPlugin];
 
-      if (errors.length) {
-        console.error(`[ESBuild] Bundle failed with ${errors.length} errors`);
-        process.exit(1);
+        // Create the context and start watching
+        const ctx = await context(mergedOpts);
+        await ctx.watch();
+        console.log(`[ESBuild] Watching ${targetOpts.entryPoints[0]}...`);
+
+      } else {
+        // --- STANDARD BUILD ---
+        const { errors } = await build(mergedOpts);
+
+        if (errors.length) {
+          console.error(`[ESBuild] Bundle failed with ${errors.length} errors`);
+          process.exit(1);
+        }
       }
     }
   } catch (e) {
