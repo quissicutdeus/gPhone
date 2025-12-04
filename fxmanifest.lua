@@ -1,6 +1,6 @@
 fx_version 'cerulean'
-name 'FiveM TypeScript Boilerplate'
-author 'Project Error'
+name 'gphone'
+author 'mbiddle'
 game 'gta5'
 
 server_script 'dist/server/**/*.js'
