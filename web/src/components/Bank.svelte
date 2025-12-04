@@ -1,0 +1,102 @@
+<script lang="ts">
+    import { createEventDispatcher } from "svelte";
+
+    const dispatch = createEventDispatcher();
+
+    const goBack = () => {
+        dispatch("back");
+    };
+</script>
+
+<div class="flex h-full flex-col bg-gray-900 text-white">
+    <!-- Header -->
+    <div
+        class="flex items-center px-4 py-4 bg-gray-800/50 backdrop-blur-md border-b border-gray-700"
+    >
+        <button
+            class="p-2 -ml-2 rounded-full hover:bg-gray-700 transition-colors"
+            on:click={goBack}
+            aria-label="Go back"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 19l-7-7 7-7"
+                />
+            </svg>
+        </button>
+        <h1 class="ml-2 text-xl font-semibold">Bank</h1>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 overflow-y-auto p-4">
+        <!-- Card -->
+        <div
+            class="bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl p-6 mb-8 shadow-lg"
+        >
+            <div class="flex justify-between items-start mb-8">
+                <span class="text-white/80 font-medium">Total Balance</span>
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-8 w-8 text-white/50"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                    />
+                </svg>
+            </div>
+            <div class="text-3xl font-bold mb-2">$12,450.00</div>
+            <div class="text-white/70 text-sm">**** **** **** 4242</div>
+        </div>
+
+        <!-- Transactions -->
+        <h3 class="text-lg font-semibold mb-4">Recent Transactions</h3>
+        <div class="space-y-4">
+            {#each [1, 2, 3] as i}
+                <div
+                    class="flex items-center justify-between p-4 bg-gray-800 rounded-xl"
+                >
+                    <div class="flex items-center">
+                        <div
+                            class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                                />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <div class="font-medium">Store Purchase</div>
+                            <div class="text-xs text-gray-400">Today</div>
+                        </div>
+                    </div>
+                    <span class="font-medium text-red-400">-$45.00</span>
+                </div>
+            {/each}
+        </div>
+    </div>
+</div>

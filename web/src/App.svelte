@@ -2,9 +2,20 @@
   import { onMount } from "svelte";
   import { debugData } from "./utils/debug";
   import { fetchNui } from "./utils/fetchNui";
+  import { time, formattedTime } from "./store/time";
+
+  const modules = import.meta.glob("./components/*.svelte", { eager: true });
+  const components: Record<string, any> = {};
+
+  for (const path in modules) {
+    const name = path.split("/").pop()?.replace(".svelte", "").toLowerCase();
+    if (name) {
+      components[name] = (modules[path] as any).default;
+    }
+  }
 
   let visible = false;
-  let currentTime = "00:00";
+  let currentApp: string = "home";
 
   // Handle NUI messages
   const handleMessage = (event: MessageEvent) => {
@@ -12,15 +23,18 @@
     if (action === "setVisible") {
       visible = data;
     } else if (action === "setTime") {
-      const { hours, minutes } = data;
-      currentTime = `${hours}:${minutes < 10 ? "0" + minutes : minutes}`;
+      time.set(data);
     }
   };
 
   onMount(() => {
     const handleKeydown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        closePhone();
+        if (currentApp !== "home") {
+          currentApp = "home";
+        } else {
+          closePhone();
+        }
       }
     };
 
@@ -36,7 +50,7 @@
       {
         action: "setTime",
         data: {
-          hours: 4,
+          hours: 16,
           minutes: 20,
         },
       },
@@ -51,6 +65,15 @@
   const closePhone = () => {
     fetchNui("hideFrame");
     visible = false;
+    currentApp = "home"; // Reset to home when closing
+  };
+
+  const openApp = (event: CustomEvent<string>) => {
+    currentApp = event.detail;
+  };
+
+  const goHome = () => {
+    currentApp = "home";
   };
 </script>
 
@@ -80,7 +103,7 @@
         <div
           class="absolute top-0 z-20 flex w-full items-center justify-between px-8 pt-3 text-sm font-medium text-white"
         >
-          <span>{currentTime}</span>
+          <span>{$formattedTime}</span>
           <div class="flex gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -102,17 +125,16 @@
         ></div>
 
         <!-- Content Area -->
-        <div
-          class="flex h-full flex-col items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 p-4 text-white"
-        >
-          <h1 class="mb-4 text-3xl font-bold tracking-tight">gPhone</h1>
-          <p class="text-gray-400">Coming soon...</p>
-          <button
-            class="mt-8 rounded-full bg-blue-400 px-6 py-3 font-semibold text-gray-900 transition-transform hover:scale-105 active:scale-95"
-            onclick={closePhone}
-          >
-            Close
-          </button>
+        <div class="h-full pt-8 pb-4">
+          {#if currentApp === "home"}
+            <svelte:component
+              this={components["home"]}
+              on:openApp={openApp}
+              {closePhone}
+            />
+          {:else if components[currentApp]}
+            <svelte:component this={components[currentApp]} on:back={goHome} />
+          {/if}
         </div>
 
         <!-- Home Indicator -->
