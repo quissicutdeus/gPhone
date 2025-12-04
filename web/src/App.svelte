@@ -68,8 +68,8 @@
     currentApp = "home"; // Reset to home when closing
   };
 
-  const openApp = (event: CustomEvent<string>) => {
-    currentApp = event.detail;
+  const openApp = (appName: string) => {
+    currentApp = appName;
   };
 
   const goHome = () => {
@@ -129,11 +129,11 @@
           {#if currentApp === "home"}
             <svelte:component
               this={components["home"]}
-              on:openApp={openApp}
+              {openApp}
               {closePhone}
             />
           {:else if components[currentApp]}
-            <svelte:component this={components[currentApp]} on:back={goHome} />
+            <svelte:component this={components[currentApp]} onback={goHome} />
           {/if}
         </div>
 

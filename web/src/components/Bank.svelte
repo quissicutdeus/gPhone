@@ -1,10 +1,8 @@
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
-
-    const dispatch = createEventDispatcher();
+    let { onback } = $props();
 
     const goBack = () => {
-        dispatch("back");
+        onback?.();
     };
 </script>
 
@@ -15,7 +13,7 @@
     >
         <button
             class="p-2 -ml-2 rounded-full hover:bg-gray-700 transition-colors"
-            on:click={goBack}
+            onclick={goBack}
             aria-label="Go back"
         >
             <svg

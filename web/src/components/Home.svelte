@@ -1,9 +1,5 @@
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
-
-    export let closePhone: () => void;
-
-    const dispatch = createEventDispatcher();
+    let { openApp, closePhone } = $props();
 </script>
 
 <div
@@ -15,7 +11,7 @@
         <!-- Phone -->
         <button
             class="flex flex-col items-center gap-2 group"
-            on:click={() => dispatch("openApp", "phone")}
+            onclick={() => openApp("phone")}
         >
             <div
                 class="w-14 h-14 rounded-2xl bg-green-500 flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 shadow-lg"
@@ -41,7 +37,7 @@
         <!-- Messages -->
         <button
             class="flex flex-col items-center gap-2 group"
-            on:click={() => dispatch("openApp", "messages")}
+            onclick={() => openApp("messages")}
         >
             <div
                 class="w-14 h-14 rounded-2xl bg-green-400 flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 shadow-lg"
@@ -67,7 +63,7 @@
         <!-- Contacts -->
         <button
             class="flex flex-col items-center gap-2 group"
-            on:click={() => dispatch("openApp", "contacts")}
+            onclick={() => openApp("contacts")}
         >
             <div
                 class="w-14 h-14 rounded-2xl bg-gray-500 flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 shadow-lg"
@@ -93,7 +89,7 @@
         <!-- Mail -->
         <button
             class="flex flex-col items-center gap-2 group"
-            on:click={() => dispatch("openApp", "mail")}
+            onclick={() => openApp("mail")}
         >
             <div
                 class="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 shadow-lg"
@@ -119,7 +115,7 @@
         <!-- Bank -->
         <button
             class="flex flex-col items-center gap-2 group"
-            on:click={() => dispatch("openApp", "bank")}
+            onclick={() => openApp("bank")}
         >
             <div
                 class="w-14 h-14 rounded-2xl bg-purple-600 flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 shadow-lg"
@@ -145,7 +141,7 @@
         <!-- Calculator -->
         <button
             class="flex flex-col items-center gap-2 group"
-            on:click={() => dispatch("openApp", "calculator")}
+            onclick={() => openApp("calculator")}
         >
             <div
                 class="w-14 h-14 rounded-2xl bg-gray-800 flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 shadow-lg"
@@ -171,7 +167,7 @@
         <!-- Settings App Icon -->
         <button
             class="flex flex-col items-center gap-2 group"
-            on:click={() => dispatch("openApp", "settings")}
+            onclick={() => openApp("settings")}
         >
             <div
                 class="w-14 h-14 rounded-2xl bg-gray-700 flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 shadow-lg"
@@ -204,7 +200,7 @@
     <div class="mt-auto mb-8">
         <button
             class="rounded-full bg-gray-700/50 px-6 py-2 text-sm font-medium text-gray-300 backdrop-blur-sm transition-colors hover:bg-gray-700"
-            on:click={closePhone}
+            onclick={closePhone}
         >
             Close Phone
         </button>

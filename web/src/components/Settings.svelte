@@ -1,11 +1,10 @@
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
     import { is24Hour } from "../store/time";
 
-    const dispatch = createEventDispatcher();
+    let { onback } = $props();
 
     const goBack = () => {
-        dispatch("back");
+        onback?.();
     };
 
     const toggleTimeFormat = () => {
@@ -20,7 +19,7 @@
     >
         <button
             class="p-2 -ml-2 rounded-full hover:bg-gray-700 transition-colors"
-            on:click={goBack}
+            onclick={goBack}
             aria-label="Go back"
         >
             <svg
@@ -65,7 +64,7 @@
                             class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
                             class:bg-blue-600={$is24Hour}
                             class:bg-gray-600={!$is24Hour}
-                            on:click={toggleTimeFormat}
+                            onclick={toggleTimeFormat}
                             aria-label="Toggle 24-hour time"
                         >
                             <span
