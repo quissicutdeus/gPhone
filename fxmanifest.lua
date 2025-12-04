@@ -1,7 +1,12 @@
 fx_version 'cerulean'
-name 'gphone'
-author 'mbiddle'
 game 'gta5'
+
+author 'mbiddle'
+version '1.0.0'
+description 'A modern phone for FiveM'
+repository 'https://github.com/mbiddle/gphone'
+
+lua54 'yes'
 
 server_script 'dist/server/**/*.js'
 client_script 'dist/client/**/*.js'
