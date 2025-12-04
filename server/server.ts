@@ -1,5 +1,5 @@
 on("onResourceStart", (resName: string) => {
   if (resName === GetCurrentResourceName()) {
-    console.log("gPhone started!");
+    console.log("gphone started!");
   }
 });
