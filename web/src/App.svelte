@@ -79,7 +79,7 @@
 
 {#if visible}
   <main
-    class="flex h-screen w-screen items-center justify-center bg-transparent"
+    class="flex h-screen w-screen items-end justify-end bg-transparent p-12"
   >
     <!-- Phone Frame -->
     <div
