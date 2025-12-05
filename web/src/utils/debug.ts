@@ -12,7 +12,7 @@ interface DebugEvent {
  * @param timer - The time to wait before dispatching the event
  */
 export const debugData = (events: DebugEvent[], timer = 1000) => {
-    if (process.env.NODE_ENV === 'development' && isBrowser()) {
+    if (isBrowser()) {
         for (const event of events) {
             setTimeout(() => {
                 window.dispatchEvent(

@@ -61,6 +61,24 @@ on('__cfx_nui:getBankBalance', (_: any, cb: Function) => {
   }
 });
 
+// Transaction Callback Logic
+const pendingCallbacks = new Map<string, Function>();
+
+onNet('gphone:client:bank:receiveTransactions', (cbId: string, data: any) => {
+  if (pendingCallbacks.has(cbId)) {
+    const cb = pendingCallbacks.get(cbId);
+    if (cb) cb(data);
+    pendingCallbacks.delete(cbId);
+  }
+});
+
+RegisterNuiCallbackType('getTransactions');
+on('__cfx_nui:getTransactions', (_: any, cb: Function) => {
+  const cbId = Math.random().toString(36).substring(7);
+  pendingCallbacks.set(cbId, cb);
+  emitNet('gphone:server:bank:getTransactions', cbId);
+});
+
 // Time Sync Loop
 setInterval(() => {
   if (isPhoneOpen) {

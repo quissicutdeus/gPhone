@@ -1,10 +1,16 @@
 <script lang="ts">
-    import { bankBalance, fetchBalance } from "../store/account";
+    import {
+        bankBalance,
+        transactions,
+        fetchBalance,
+        fetchTransactions,
+    } from "../store/account";
 
     let { onback } = $props();
 
     $effect(() => {
         fetchBalance();
+        fetchTransactions();
     });
 
     const goBack = () => {
@@ -41,7 +47,7 @@
     </div>
 
     <!-- Content -->
-    <div class="flex-1 overflow-y-auto p-4">
+    <div class="flex-1 overflow-y-auto p-4 no-scrollbar">
         <!-- Card -->
         <div
             class="bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl p-6 mb-8 shadow-lg"
@@ -75,7 +81,7 @@
         <!-- Transactions -->
         <h3 class="text-lg font-semibold mb-4">Recent Transactions</h3>
         <div class="space-y-4">
-            {#each [1, 2, 3] as i}
+            {#each $transactions as transaction}
                 <div
                     class="flex items-center justify-between p-4 bg-gray-800 rounded-xl"
                 >
@@ -99,11 +105,28 @@
                             </svg>
                         </div>
                         <div class="ml-3">
-                            <div class="font-medium">Store Purchase</div>
-                            <div class="text-xs text-gray-400">Today</div>
+                            <div class="font-medium">
+                                {transaction.message ||
+                                    transaction.title ||
+                                    "Transaction"}
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                {new Date(
+                                    transaction.time * 1000,
+                                ).toLocaleDateString()}
+                            </div>
                         </div>
                     </div>
-                    <span class="font-medium text-red-400">-$45.00</span>
+                    <span
+                        class={`font-medium ${transaction.amount < 0 ? "text-red-400" : "text-green-400"}`}
+                    >
+                        {transaction.amount < 0
+                            ? "-"
+                            : "+"}${new Intl.NumberFormat("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        }).format(Math.abs(transaction.amount))}
+                    </span>
                 </div>
             {/each}
         </div>
