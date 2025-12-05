@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2024",
+    "target": "es2021",
     "strict": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -9,7 +9,7 @@
       "@citizenfx/client"
     ],
     "lib": [
-      "ES2024"
+      "es2021"
     ]
   },
   "include": [

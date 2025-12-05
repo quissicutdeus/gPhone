@@ -10,7 +10,7 @@ const TARGET_ENTRIES = [
     outfile: "./dist/server/server.js",
   },
   {
-    target: "ES2024",
+    target: "es2021",
     entryPoints: ["client/client.ts"],
     outfile: "./dist/client/client.js",
   },
