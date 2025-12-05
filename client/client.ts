@@ -49,6 +49,18 @@ on('__cfx_nui:hideFrame', (_: any, cb: Function) => {
   cb({});
 });
 
+// NUI Callback to get bank balance
+RegisterNuiCallbackType('getBankBalance');
+on('__cfx_nui:getBankBalance', (_: any, cb: Function) => {
+  try {
+    const PlayerData = exports['qbx_core'].GetPlayerData();
+    cb(PlayerData.money.bank);
+  } catch (error) {
+    console.error("Error getting bank balance from qbx_core:", error);
+    cb(0);
+  }
+});
+
 // Time Sync Loop
 setInterval(() => {
   if (isPhoneOpen) {

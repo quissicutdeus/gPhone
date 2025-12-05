@@ -1,5 +1,11 @@
 <script lang="ts">
+    import { bankBalance, fetchBalance } from "../store/account";
+
     let { onback } = $props();
+
+    $effect(() => {
+        fetchBalance();
+    });
 
     const goBack = () => {
         onback?.();
@@ -57,7 +63,12 @@
                     />
                 </svg>
             </div>
-            <div class="text-3xl font-bold mb-2">$12,450.00</div>
+            <div class="text-3xl font-bold mb-2">
+                ${new Intl.NumberFormat("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                }).format($bankBalance)}
+            </div>
             <div class="text-white/70 text-sm">**** **** **** 4242</div>
         </div>
 
