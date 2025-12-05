@@ -80,7 +80,7 @@
 
 {#if visible}
   <main
-    class="flex h-screen w-screen items-end justify-end bg-transparent p-12"
+    class="flex h-screen w-screen items-end justify-end overflow-hidden bg-transparent p-12"
   >
     <!-- Phone Frame -->
     <div
