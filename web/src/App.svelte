@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { fly } from "svelte/transition";
   import { debugData } from "./utils/debug";
   import { fetchNui } from "./utils/fetchNui";
   import { time, formattedTime } from "./store/time";
@@ -83,6 +84,7 @@
   >
     <!-- Phone Frame -->
     <div
+      transition:fly={{ y: 1000, duration: 500 }}
       class="relative h-[850px] w-[400px] rounded-[3.5rem] border-[8px] border-gray-900 bg-black shadow-2xl ring-1 ring-gray-700"
     >
       <!-- Side Buttons -->
