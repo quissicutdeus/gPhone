@@ -11,7 +11,7 @@ const app = new ServerApp<PlayerTransaction>('bank', transactionRepo, {
 });
 
 app.registerEvent('getTransactions', async (source, cbId, data, citizenid) => {
-    const result = await transactionRepo.findById(citizenid);
+    const result = await transactionRepo.findByCitizenId(citizenid);
 
     let transactions = [];
     if (result && result.transactions) {
