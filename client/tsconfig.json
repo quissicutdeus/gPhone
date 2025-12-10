@@ -10,10 +10,17 @@
     ],
     "lib": [
       "es2021"
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": [
+        "../shared/*"
+      ]
+    }
   },
   "include": [
-    "./**/*"
+    "./**/*",
+    "../shared/**/*"
   ],
   "exclude": [
     "**/node_modules",

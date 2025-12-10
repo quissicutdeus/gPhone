@@ -1,3 +1,9 @@
+import './controllers/ContactController';
+import './controllers/MessageController';
+import './controllers/ConversationController';
+import './controllers/BankController';
+import { ClientApp } from './lib/ClientApp';
+
 let isPhoneOpen = false;
 
 // Function to send time to NUI
@@ -61,23 +67,17 @@ on('__cfx_nui:getBankBalance', (_: any, cb: Function) => {
   }
 });
 
-// Transaction Callback Logic
-const pendingCallbacks = new Map<string, Function>();
-
-onNet('gphone:client:bank:receiveTransactions', (cbId: string, data: any) => {
-  if (pendingCallbacks.has(cbId)) {
-    const cb = pendingCallbacks.get(cbId);
-    if (cb) cb(data);
-    pendingCallbacks.delete(cbId);
+RegisterNuiCallbackType('getCitizenId');
+on('__cfx_nui:getCitizenId', (_: any, cb: Function) => {
+  try {
+    const PlayerData = exports['qbx_core'].GetPlayerData();
+    cb(PlayerData.citizenid);
+  } catch (error) {
+    console.error("Error getting citizenid from qbx_core:", error);
+    cb(null);
   }
 });
 
-RegisterNuiCallbackType('getTransactions');
-on('__cfx_nui:getTransactions', (_: any, cb: Function) => {
-  const cbId = Math.random().toString(36).substring(7);
-  pendingCallbacks.set(cbId, cb);
-  emitNet('gphone:server:bank:getTransactions', cbId);
-});
 
 // Time Sync Loop
 setInterval(() => {
