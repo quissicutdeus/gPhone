@@ -275,6 +275,26 @@
         const other = conv.participants?.find(
             (p) => p.citizenid !== myCitizenId,
         );
+
+        // Try to find in local contacts first
+        if (other && other.contact) {
+            // Match by phone number since citizenid in contacts refers to the owner
+            const participantPhone = other.contact.phone;
+
+            const contact = contacts.find((c) => {
+                return c.phone === participantPhone;
+            });
+
+            if (contact) {
+                const name = `${contact.firstname} ${contact.lastname || ""}`;
+                const initials =
+                    (contact.firstname[0] || "") +
+                    (contact.lastname?.[0] || "");
+                return { name, initials: initials.toUpperCase() };
+            }
+        }
+
+        // Fallback to participant info
         if (other?.contact) {
             const name = `${other.contact.firstname} ${
                 other.contact.lastname || ""
@@ -291,6 +311,7 @@
     };
 
     onMount(() => {
+        // Ensure we reload data when mounting to get latest state
         loadConversations();
         loadContacts();
         fetchNui<string>("getCitizenId").then((id) => {

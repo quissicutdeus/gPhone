@@ -20,7 +20,7 @@ app.registerEvent('get', async (source, cbId, data, citizenid) => {
         // Map simplified participants with names
         conv.participants = participants.map(p => ({
             ...p,
-            contact: { firstname: p.firstname, lastname: p.lastname } // Mocking contact structure for UI convenience
+            contact: { firstname: p.firstname, lastname: p.lastname, phone: p.phone, citizenid: p.citizenid, id: 0, favorite: false, created_at: new Date(), updated_at: new Date() } // Mocking contact structure for UI convenience
         }));
     }
     return conversations;
@@ -43,7 +43,8 @@ const hydrateParticipants = async (conversationId: number) => {
     const query = `
         SELECT p.*, 
         JSON_UNQUOTE(JSON_EXTRACT(pl.charinfo, '$.firstname')) as firstname,
-        JSON_UNQUOTE(JSON_EXTRACT(pl.charinfo, '$.lastname')) as lastname
+        JSON_UNQUOTE(JSON_EXTRACT(pl.charinfo, '$.lastname')) as lastname,
+        JSON_UNQUOTE(JSON_EXTRACT(pl.charinfo, '$.phone')) as phone
         FROM gphone_messages_participants p
         LEFT JOIN players pl ON p.citizenid = pl.citizenid
         WHERE p.conversation_id = ? AND p.left_at IS NULL
@@ -64,13 +65,13 @@ app.registerEvent('create', async (source, cbId, data, citizenid) => {
 
         if (targetPlayer) {
             // Online player logic
-            if (targetPlayer.phone_number) {
-                targetCitizenId = targetPlayer.phone_number;
-            } else if (targetPlayer.PlayerData) {
+            if (targetPlayer.PlayerData) {
                 targetCitizenId = targetPlayer.PlayerData.citizenid;
                 if (targetPlayer.PlayerData.charinfo) {
                     targetName = `${targetPlayer.PlayerData.charinfo.firstname} ${targetPlayer.PlayerData.charinfo.lastname}`;
                 }
+            } else if (targetPlayer.phone_number) {
+                targetCitizenId = targetPlayer.phone_number;
             }
             console.log(`[Conversation] Resolved phone ${data.phone} to ${targetCitizenId} via QBX`);
         } else {
