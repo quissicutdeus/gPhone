@@ -37,7 +37,7 @@
         } catch (e) {
             // Only use mock data in development environment
             if (import.meta.env.DEV) {
-                console.warn("Used mock data due to error", e);
+                console.warn("Used mock data for contacts due to error", e);
                 contacts = [
                     {
                         id: 1,
