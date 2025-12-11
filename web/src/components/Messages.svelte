@@ -95,30 +95,34 @@
         try {
             contacts = await fetchNui<Contact[]>("getContacts");
         } catch (e) {
-            console.error(e);
-            // Sync with Contacts.svelte mock
-            contacts = [
-                {
-                    id: 1,
-                    citizenid: "1",
-                    firstname: "Alice",
-                    lastname: "Smith",
-                    phone: "555-0100",
-                    favorite: true,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                },
-                {
-                    id: 2,
-                    citizenid: "2",
-                    firstname: "Bob",
-                    lastname: "Jones",
-                    phone: "555-0101",
-                    favorite: false,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                },
-            ];
+            // Only use mock data in development environment
+            if (import.meta.env.DEV) {
+                console.warn("Used mock data for contacts due to error", e);
+                contacts = [
+                    {
+                        id: 1,
+                        citizenid: "1",
+                        firstname: "Alice",
+                        lastname: "Smith",
+                        phone: "555-0100",
+                        favorite: true,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                    },
+                    {
+                        id: 2,
+                        citizenid: "2",
+                        firstname: "Bob",
+                        lastname: "Jones",
+                        phone: "555-0101",
+                        favorite: false,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                    },
+                ];
+            } else {
+                console.error("Failed to load contacts in Messages:", e);
+            }
         }
     };
 

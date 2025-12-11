@@ -15,7 +15,11 @@ export class ClientApp {
     private handleResponse(cbId: string, data: any) {
         if (this.pendingCallbacks.has(cbId)) {
             const cb = this.pendingCallbacks.get(cbId);
-            if (cb) cb(data);
+            if (cb) {
+                // Deep clean data to prevent NUI serialization issues (proxies, etc)
+                const cleanData = JSON.parse(JSON.stringify(data));
+                cb(cleanData);
+            }
             this.pendingCallbacks.delete(cbId);
         }
     }

@@ -4,6 +4,7 @@ export interface Contact {
     firstname: string;
     lastname?: string;
     phone: string;
+    email?: string;
     avatar?: string; // Base64 string from blob
     favorite: boolean;
     created_at: Date | string;

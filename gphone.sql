@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS `gphone_contacts` (
   `firstname` varchar(50) NOT NULL,
   `lastname` varchar(50) DEFAULT NULL,
   `phone` varchar(20) NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
   `avatar` MEDIUMBLOB DEFAULT NULL,
   `favorite` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

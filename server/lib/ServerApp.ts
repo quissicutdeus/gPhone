@@ -58,7 +58,7 @@ export class ServerApp<T> {
             try {
                 const player = exports.qbx_core.GetPlayer(src);
                 if (!player) {
-                    // Optional: handle not logged in
+                    emitNet(clientEventName, src, cbId, { error: 'Player not authenticated' });
                     return;
                 }
 
@@ -70,7 +70,7 @@ export class ServerApp<T> {
                 }
             } catch (error) {
                 console.error(`Error in ${eventName}:`, error);
-                // Optionally emit error
+                emitNet(clientEventName, src, cbId, { error: error instanceof Error ? error.message : 'Unknown error' });
             }
         });
     }
