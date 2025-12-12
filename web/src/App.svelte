@@ -84,12 +84,14 @@
     >
       <!-- Side Buttons -->
       <!-- Power Button -->
-      <div
-        class="absolute -right-[10px] top-[180px] h-12 w-[10px] rounded-r-md bg-gray-800"
-      ></div>
+      <button
+        class="absolute -right-[13px] top-[180px] h-12 w-[5px] rounded-r-md bg-gray-800"
+        onclick={closePhone}
+        title="Close Phone"
+      ></button>
       <!-- Volume Buttons -->
       <div
-        class="absolute -right-[10px] top-[250px] h-24 w-[10px] rounded-r-md bg-gray-800"
+        class="absolute -right-[13px] top-[250px] h-24 w-[5px] rounded-r-md bg-gray-800"
       ></div>
 
       <!-- Screen -->

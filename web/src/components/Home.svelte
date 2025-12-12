@@ -3,7 +3,7 @@
 </script>
 
 <div
-    class="flex h-full flex-col items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 p-4 text-white"
+    class="flex h-full flex-col items-center bg-gradient-to-br from-gray-800 to-gray-900 p-4 text-white"
 >
     <h1 class="mb-8 text-4xl font-bold tracking-tight">gphone</h1>
 
@@ -194,15 +194,6 @@
                 </svg>
             </div>
             <span class="text-xs font-medium text-gray-300">Settings</span>
-        </button>
-    </div>
-
-    <div class="mt-auto mb-8">
-        <button
-            class="rounded-full bg-gray-700/50 px-6 py-2 text-sm font-medium text-gray-300 backdrop-blur-sm transition-colors hover:bg-gray-700"
-            onclick={closePhone}
-        >
-            Close Phone
         </button>
     </div>
 </div>
