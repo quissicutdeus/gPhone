@@ -22,9 +22,15 @@ export async function fetchNui<T = any>(eventName: string, data?: any, mockData?
 
     const resp = await fetch(`https://${resourceName}/${eventName}`, options);
 
-    const respFormatted = await resp.json();
-
-    return respFormatted;
+    try {
+        const respFormatted = await resp.json();
+        return respFormatted;
+    } catch (e) {
+        // If the response is not valid JSON (or empty), return null or the raw text if needed.
+        // For NUI callbacks that don't return data (just status OK), this is common.
+        // We'll return null to avoid the error.
+        return null as unknown as T;
+    }
 }
 
 export const isBrowser = () => !(window as any).invokeNative;
