@@ -2,8 +2,9 @@
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { debugData } from "./utils/debug";
-  import { fetchNui } from "./utils/fetchNui";
   import { time, formattedTime } from "./store/time";
+  import { currentApp, openApp, goHome, closePhone } from "./store/navigation";
+  import { callStore } from "./store/call";
 
   const modules = import.meta.glob("./components/*.svelte", { eager: true });
   const components: Record<string, any> = {};
@@ -16,7 +17,6 @@
   }
 
   let visible = false;
-  let currentApp: string = "home";
 
   // Handle NUI messages
   const handleMessage = (event: MessageEvent) => {
@@ -25,14 +25,23 @@
       visible = data;
     } else if (action === "setTime") {
       time.set(data);
+    } else if (action === "callStatus") {
+      // { status: 'connected' | 'idle' | 'incoming', number: '...', name: '...' }
+      if (data.status === "incoming") {
+        visible = true;
+        callStore.setIncoming(data.number, data.name);
+        openApp("phone");
+      } else {
+        callStore.setStatus(data.status);
+      }
     }
   };
 
   onMount(() => {
     const handleKeydown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        if (currentApp !== "home") {
-          currentApp = "home";
+        if ($currentApp.name !== "home") {
+          goHome();
         } else {
           closePhone();
         }
@@ -62,20 +71,6 @@
       window.removeEventListener("keydown", handleKeydown);
     };
   });
-
-  const closePhone = () => {
-    fetchNui("hideFrame");
-    visible = false;
-    currentApp = "home"; // Reset to home when closing
-  };
-
-  const openApp = (appName: string) => {
-    currentApp = appName;
-  };
-
-  const goHome = () => {
-    currentApp = "home";
-  };
 </script>
 
 {#if visible}
@@ -128,14 +123,18 @@
 
         <!-- Content Area -->
         <div class="h-full pt-8 pb-4">
-          {#if currentApp === "home"}
+          {#if $currentApp.name === "home"}
             <svelte:component
               this={components["home"]}
               {openApp}
               {closePhone}
             />
-          {:else if components[currentApp]}
-            <svelte:component this={components[currentApp]} onback={goHome} />
+          {:else if components[$currentApp.name]}
+            <svelte:component
+              this={components[$currentApp.name]}
+              onback={goHome}
+              {...$currentApp.props}
+            />
           {/if}
         </div>
 

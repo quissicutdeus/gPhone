@@ -2,6 +2,8 @@
     import { onMount } from "svelte";
     import { fetchNui } from "../utils/fetchNui";
     import type { Contact } from "@shared/types";
+    import { callStore } from "../store/call";
+    import { openApp } from "../store/navigation";
 
     let { onback } = $props();
 
@@ -29,6 +31,20 @@
         } else {
             onback?.();
         }
+    };
+
+    const handleMessage = async () => {
+        if (!selectedContact) return;
+
+        // We can pass the contact info to Messages app to find/start conversation
+        openApp("messages", { initialContact: selectedContact });
+    };
+
+    const handleCall = () => {
+        if (!selectedContact) return;
+        const name = `${selectedContact.firstname} ${selectedContact.lastname || ""}`;
+        callStore.startCall(selectedContact.phone, name);
+        openApp("phone");
     };
 
     const loadContacts = async () => {
@@ -228,7 +244,7 @@
                 </div>
             {/if}
 
-            {#snippet contactItem(contact)}
+            {#snippet contactItem(contact: Contact)}
                 <!-- svelte-ignore a11y_click_events_have_key_events -->
                 <div
                     class="flex items-center p-4 hover:bg-gray-800/50 transition-colors cursor-pointer group"
@@ -323,6 +339,49 @@
 
                 <!-- Actions Row -->
                 <div class="flex space-x-4">
+                    <button
+                        class="p-3 bg-green-600 rounded-full hover:bg-green-500 transition-colors"
+                        onclick={handleCall}
+                        aria-label="Call"
+                    >
+                        <!-- Call Icon -->
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                            />
+                        </svg>
+                    </button>
+                    <button
+                        class="p-3 bg-blue-600 rounded-full hover:bg-blue-500 transition-colors"
+                        onclick={handleMessage}
+                        aria-label="Message"
+                    >
+                        <!-- Message Icon -->
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                            />
+                        </svg>
+                    </button>
+
                     <button
                         class="p-3 bg-gray-700 rounded-full hover:bg-gray-600 transition-colors"
                         onclick={shareContact}

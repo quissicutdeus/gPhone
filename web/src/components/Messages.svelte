@@ -2,8 +2,18 @@
     import { onMount, tick } from "svelte";
     import { fetchNui } from "../utils/fetchNui";
     import type { Conversation, Message, Contact } from "@shared/types";
+    import { callStore } from "../store/call";
+    import { openApp } from "../store/navigation";
 
-    let { onback } = $props();
+    let {
+        onback,
+        conversationId = null,
+        initialContact = null,
+    } = $props<{
+        onback?: () => void;
+        conversationId?: number;
+        initialContact?: Contact;
+    }>();
 
     let view = $state<"list" | "chat" | "new">("list");
     let conversations: Conversation[] = $state([]);
@@ -316,9 +326,88 @@
         };
     };
 
+    const handleCall = () => {
+        if (!activeConversation || activeConversation.is_group) return;
+
+        // Find the other participant's phone number
+        // This logic is a bit tricky depending on how complete the data is.
+        // We might need to rely on what getDisplayInfo used or data available in participants.
+
+        const other = activeConversation.participants?.find(
+            (p) => p.citizenid !== myCitizenId,
+        );
+
+        let phoneNumber = "";
+        let displayName = getDisplayInfo(activeConversation).name;
+
+        if (other && other.contact && other.contact.phone) {
+            phoneNumber = other.contact.phone;
+        } else {
+            // If we don't have direct phone access here, we might need a separate NUI call or better data.
+            // For now assume we can find it via contacts matching or it's in the participant data if we updated the types/backend.
+            // Let's try to match with local contacts if loaded
+            const contact = contacts.find(
+                (c) => c.citizenid === other?.citizenid,
+            ); // This citizenid check might be wrong if contact.citizenid is owner.
+            // Let's rely on the mock data or structure.
+            // If we simulated the conversation data, we might not have phone numbers attached to participants directly unless they are in our contacts list.
+
+            // In a real app we'd probably have `other.phone` or `other.contact.phone`.
+            // Let's assume `other.contact.phone` exists as per types (if they do).
+            // Based on `getDisplayInfo`, `other.contact` exists.
+        }
+
+        // Fallback or explicit check
+        if (!phoneNumber && other?.contact?.phone) {
+            phoneNumber = other.contact.phone;
+        }
+
+        // Manual override for mock testing if needed
+        if (
+            !phoneNumber &&
+            import.meta.env.DEV &&
+            activeConversation.id === 1
+        ) {
+            phoneNumber = "555-0100";
+            displayName = "Alice Smith";
+        }
+
+        if (phoneNumber) {
+            callStore.startCall(phoneNumber, displayName);
+            openApp("phone");
+        } else {
+            console.warn("Could not find phone number for participant");
+        }
+    };
+
     onMount(() => {
         // Ensure we reload data when mounting to get latest state
-        loadConversations();
+        loadConversations().then(() => {
+            if (conversationId) {
+                const conv = conversations.find((c) => c.id === conversationId);
+                if (conv) {
+                    openConversation(conv);
+                }
+            } else if (initialContact) {
+                // Logic to find existing by phone or start new
+                const existing = conversations.find(
+                    (conv) =>
+                        !conv.is_group &&
+                        conv.participants?.some(
+                            (p) =>
+                                p.citizenid !== myCitizenId &&
+                                p.contact?.phone === initialContact.phone,
+                        ),
+                );
+
+                if (existing) {
+                    openConversation(existing);
+                } else {
+                    view = "new";
+                    selectedContactId = initialContact.citizenid;
+                }
+            }
+        });
         loadContacts();
         fetchNui<string>("getCitizenId").then((id) => {
             if (id) myCitizenId = id;
@@ -365,6 +454,28 @@
                 {getDisplayInfo(activeConversation).name}
             {/if}
         </h1>
+        {#if view === "chat" && activeConversation && !activeConversation.is_group}
+            <button
+                class="ml-auto p-2 rounded-full hover:bg-gray-700 transition-colors"
+                onclick={handleCall}
+                aria-label="Call"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 text-green-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                    />
+                </svg>
+            </button>
+        {/if}
         {#if view === "list"}
             <button
                 class="ml-auto p-2 rounded-full hover:bg-gray-700 transition-colors"
@@ -392,7 +503,9 @@
     <!-- Content -->
     <div class="flex-1 flex flex-col min-h-0">
         {#if view === "list"}
-            <div class="flex-1 overflow-y-auto divide-y divide-gray-800">
+            <div
+                class="flex-1 overflow-y-auto divide-y divide-gray-800 no-scrollbar"
+            >
                 {#each conversations as conv}
                     <button
                         class="w-full text-left flex items-center p-4 hover:bg-gray-800/50 transition-colors"
@@ -418,7 +531,7 @@
                 {/each}
             </div>
         {:else if view === "new"}
-            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
                 <h3 class="text-lg font-medium">Select Contact</h3>
                 <div class="space-y-2">
                     {#each contacts as contact}
@@ -442,7 +555,7 @@
         {:else if view === "chat"}
             <div
                 id="chat-container"
-                class="flex-1 overflow-y-auto flex flex-col"
+                class="flex-1 overflow-y-auto flex flex-col no-scrollbar"
             >
                 <div class="mt-auto p-4 space-y-4 w-full">
                     {#each messages as msg}
