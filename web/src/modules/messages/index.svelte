@@ -1,9 +1,15 @@
 <script lang="ts">
     import { onMount, tick } from "svelte";
-    import { fetchNui } from "../utils/fetchNui";
+    import { fetchNui } from "../../utils/fetchNui";
     import type { Conversation, Message, Contact } from "@shared/types";
-    import { callStore } from "../store/call";
-    import { openApp } from "../store/navigation";
+    import { callStore } from "../../store/call";
+    import { openApp } from "../../store/navigation";
+    import ScreenHeader from "../../components/ScreenHeader.svelte";
+    import {
+        mockConversations,
+        mockContacts,
+        mockMessages,
+    } from "../../mocks/data";
 
     let {
         onback,
@@ -31,73 +37,43 @@
     let selectedContactId = $state("");
     let groupName = $state("");
 
-    const loadConversations = async () => {
-        try {
-            conversations = await fetchNui<Conversation[]>("getConversations");
-        } catch (e) {
-            console.error(e);
-            // Mock Data
-            conversations = [
-                {
-                    id: 1,
-                    is_group: false,
-                    name: "Alice Smith",
-                    status: 1,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    unread_count: 2,
-                    last_message: {
-                        id: 10,
-                        conversation_id: 1,
-                        citizenid: "1",
-                        status: 1,
-                        message: "I'm just checking in. Sorry I tried.",
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
+    // Helper to augment mock conversations with "Me" participant if missing,
+    // to prevent logic errors in development if the mock data is too simple.
+    const ensureMeParticipant = (convs: Conversation[], myId: string) => {
+        return convs.map((c) => {
+            const hasMe = c.participants?.some((p) => p.citizenid === myId);
+            if (!hasMe && myId) {
+                // Return a copy with Me added
+                return {
+                    ...c,
                     participants: [
+                        ...(c.participants || []),
                         {
-                            id: 1,
-                            conversation_id: 1,
-                            citizenid: "1", // Alice
+                            id: 999,
+                            conversation_id: c.id,
+                            citizenid: myId,
                             role: "member",
                             status: 1,
                             last_read: new Date().toISOString(),
                             created_at: new Date().toISOString(),
                             updated_at: new Date().toISOString(),
                         },
-                        {
-                            id: 2,
-                            conversation_id: 1,
-                            citizenid: myCitizenId, // Me
-                            role: "admin",
-                            status: 1,
-                            last_read: new Date().toISOString(),
-                            created_at: new Date().toISOString(),
-                            updated_at: new Date().toISOString(),
-                        },
                     ],
-                },
-                {
-                    id: 2,
-                    is_group: true,
-                    name: "Heist Crew",
-                    status: 1,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    unread_count: 0,
-                    last_message: {
-                        id: 20,
-                        conversation_id: 2,
-                        citizenid: "2",
-                        status: 1,
-                        message: "Let's roll.",
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
-                    participants: [],
-                },
-            ];
+                } as Conversation;
+            }
+            return c;
+        });
+    };
+
+    const loadConversations = async () => {
+        try {
+            conversations = await fetchNui<Conversation[]>("getConversations");
+        } catch (e) {
+            console.error(e);
+            // Mock Data
+            // We ensure "Me" is part of it for local testing logic
+            conversations = ensureMeParticipant(mockConversations, "my-id");
+            if (!myCitizenId) myCitizenId = "my-id";
         }
     };
 
@@ -108,30 +84,7 @@
             // Only use mock data in development environment
             if (import.meta.env.DEV) {
                 console.warn("Used mock data for contacts due to error", e);
-                contacts = [
-                    {
-                        id: 1,
-                        citizenid: "1",
-                        firstname: "Alice",
-                        lastname: "Smith",
-                        phone: "555-0100",
-                        email: "alice@gphone.site",
-                        favorite: true,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
-                    {
-                        id: 2,
-                        citizenid: "2",
-                        firstname: "Bob",
-                        lastname: "Jones",
-                        phone: "555-0101",
-                        email: "bob@gphone.site",
-                        favorite: false,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
-                ];
+                contacts = mockContacts;
             } else {
                 console.error("Failed to load contacts in Messages:", e);
             }
@@ -152,66 +105,12 @@
         } catch (e) {
             console.error(e);
             // Mock Messages
-            if (conversationId === 1) {
-                messages = [
-                    {
-                        id: 1,
-                        conversation_id: 1,
-                        citizenid: "1", // Alice
-                        status: 1,
-                        message: "Just checking in.",
-                        created_at: new Date(Date.now() - 1000).toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
-                    {
-                        id: 2,
-                        conversation_id: 1,
-                        citizenid: myCitizenId,
-                        status: 1,
-                        message: "Hi Alice, what's up?",
-                        created_at: new Date(
-                            Date.now() - 3500000,
-                        ).toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
-                    {
-                        id: 3,
-                        conversation_id: 1,
-                        citizenid: "1",
-                        status: 1,
-                        message: "I'm just checking in. Sorry I tried.",
-                        created_at: new Date(Date.now() - 1000).toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
-                ];
-            } else if (conversationId === 2) {
-                messages = [
-                    {
-                        id: 1,
-                        conversation_id: 2,
-                        citizenid: "2", // Bob
-                        status: 1,
-                        message: "Hey is everyone ready?",
-                        created_at: new Date(
-                            Date.now() - 7100000,
-                        ).toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
-                    {
-                        id: 2,
-                        conversation_id: 2,
-                        citizenid: myCitizenId,
-                        status: 1,
-                        message: "Let's roll.",
-                        created_at: new Date(
-                            Date.now() - 7100000,
-                        ).toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
-                ];
-            } else {
-                messages = [];
-            }
+            messages = mockMessages[conversationId] || [];
+
+            // Fixup mock message citizenids to match the local "Me" id if slightly different in static data
+            // In static data we used "my-id", and here we set myCitizenId to "my-id" if failing to fetchNui.
+            // So it should align automatically if we are consistent.
+
             await tick();
             scrollToBottom();
         }
@@ -250,6 +149,21 @@
             scrollToBottom();
         } catch (e) {
             console.error(e);
+            // Local echo for mock
+            const mockEcho: Message = {
+                id: Math.random(),
+                conversation_id: activeConversation.id,
+                citizenid: myCitizenId,
+                status: 1,
+                message: messageInput,
+                attachments: attachments.map((a, i) => ({ ...a, id: i })), // Add mock IDs
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            };
+            messages = [...messages, mockEcho];
+            messageInput = "";
+            await tick();
+            scrollToBottom();
         }
         isSending = false;
     };
@@ -413,24 +327,51 @@
             if (id) myCitizenId = id;
         });
     });
+
+    const getTitle = () => {
+        if (view === "list") return "Messages";
+        if (view === "new") return "New Message";
+        return getDisplayInfo(activeConversation).name;
+    };
+
+    const handleBack = () => {
+        if (view === "list") {
+            onback?.();
+        } else {
+            view = "list";
+            loadConversations();
+        }
+    };
 </script>
 
-<div class="flex h-full flex-col bg-gray-900 text-white">
-    <!-- Header -->
-    <div
-        class="flex items-center px-4 py-4 bg-gray-800/50 backdrop-blur-md border-b border-gray-700"
-    >
+{#snippet headerActions()}
+    {#if view === "chat" && activeConversation && !activeConversation.is_group}
         <button
-            class="p-2 -ml-2 rounded-full hover:bg-gray-700 transition-colors"
-            onclick={() => {
-                if (view === "list") {
-                    onback?.();
-                } else {
-                    view = "list";
-                    loadConversations();
-                }
-            }}
-            aria-label="Go back"
+            class="ml-auto p-2 rounded-full hover:bg-gray-700 transition-colors"
+            onclick={handleCall}
+            aria-label="Call"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6 text-green-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                />
+            </svg>
+        </button>
+    {/if}
+    {#if view === "list"}
+        <button
+            class="ml-auto p-2 rounded-full hover:bg-gray-700 transition-colors"
+            onclick={() => (view = "new")}
+            aria-label="New message"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -443,62 +384,19 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M15 19l-7-7 7-7"
+                    d="M12 4v16m8-8H4"
                 />
             </svg>
         </button>
-        <h1 class="ml-2 text-xl font-semibold">
-            {#if view === "list"}
-                Messages
-            {:else if view === "new"}{:else}
-                {getDisplayInfo(activeConversation).name}
-            {/if}
-        </h1>
-        {#if view === "chat" && activeConversation && !activeConversation.is_group}
-            <button
-                class="ml-auto p-2 rounded-full hover:bg-gray-700 transition-colors"
-                onclick={handleCall}
-                aria-label="Call"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-green-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                </svg>
-            </button>
-        {/if}
-        {#if view === "list"}
-            <button
-                class="ml-auto p-2 rounded-full hover:bg-gray-700 transition-colors"
-                onclick={() => (view = "new")}
-                aria-label="New message"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 4v16m8-8H4"
-                    />
-                </svg>
-            </button>
-        {/if}
-    </div>
+    {/if}
+{/snippet}
+
+<div class="flex h-full flex-col bg-gray-900 text-white">
+    <ScreenHeader
+        title={getTitle()}
+        onback={handleBack}
+        actions={headerActions}
+    />
 
     <!-- Content -->
     <div class="flex-1 flex flex-col min-h-0">

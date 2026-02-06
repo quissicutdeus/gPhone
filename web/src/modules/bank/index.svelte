@@ -4,7 +4,8 @@
         transactions,
         fetchBalance,
         fetchTransactions,
-    } from "../store/account";
+    } from "../../store/account";
+    import ScreenHeader from "../../components/ScreenHeader.svelte";
 
     let { onback } = $props();
 
@@ -20,31 +21,7 @@
 
 <div class="flex h-full flex-col bg-gray-900 text-white">
     <!-- Header -->
-    <div
-        class="flex items-center px-4 py-4 bg-gray-800/50 backdrop-blur-md border-b border-gray-700"
-    >
-        <button
-            class="p-2 -ml-2 rounded-full hover:bg-gray-700 transition-colors"
-            onclick={goBack}
-            aria-label="Go back"
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 19l-7-7 7-7"
-                />
-            </svg>
-        </button>
-        <h1 class="ml-2 text-xl font-semibold">Bank</h1>
-    </div>
+    <ScreenHeader title="Bank" {onback} />
 
     <!-- Content -->
     <div class="flex-1 overflow-y-auto p-4 no-scrollbar">

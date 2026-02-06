@@ -1,9 +1,11 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { fetchNui } from "../utils/fetchNui";
+    import { fetchNui } from "../../utils/fetchNui";
     import type { Contact } from "@shared/types";
-    import { callStore } from "../store/call";
-    import { openApp } from "../store/navigation";
+    import { callStore } from "../../store/call";
+    import { openApp } from "../../store/navigation";
+    import ScreenHeader from "../../components/ScreenHeader.svelte";
+    import { mockContacts } from "../../mocks/data";
 
     let { onback } = $props();
 
@@ -54,30 +56,7 @@
             // Only use mock data in development environment
             if (import.meta.env.DEV) {
                 console.warn("Used mock data for contacts due to error", e);
-                contacts = [
-                    {
-                        id: 1,
-                        citizenid: "1",
-                        firstname: "Alice",
-                        lastname: "Smith",
-                        phone: "555-0100",
-                        email: "alice@gphone.site",
-                        favorite: true,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
-                    {
-                        id: 2,
-                        citizenid: "2",
-                        firstname: "Bob",
-                        lastname: "Jones",
-                        phone: "555-0101",
-                        email: "bob@gphone.site",
-                        favorite: false,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString(),
-                    },
-                ];
+                contacts = mockContacts;
             } else {
                 console.error("Failed to load contacts:", e);
             }
@@ -152,17 +131,16 @@
     onMount(() => {
         loadContacts();
     });
+
+    const getTitle = () => (selectedContact ? "Contact Details" : "Contacts");
 </script>
 
-<div class="flex h-full flex-col bg-gray-900 text-white">
-    <!-- Header -->
-    <div
-        class="flex items-center px-4 py-4 bg-gray-800/50 backdrop-blur-md border-b border-gray-700"
-    >
+{#snippet headerActions()}
+    {#if !selectedContact}
         <button
-            class="p-2 -ml-2 rounded-full hover:bg-gray-700 transition-colors"
-            onclick={goBack}
-            aria-label="Go back"
+            class="ml-auto p-2 rounded-full hover:bg-gray-700 transition-colors"
+            onclick={() => (isAdding = !isAdding)}
+            aria-label="Add contact"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -175,36 +153,15 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M15 19l-7-7 7-7"
+                    d="M12 4v16m8-8H4"
                 />
             </svg>
         </button>
-        <h1 class="ml-2 text-xl font-semibold">
-            {selectedContact ? "Contact Details" : "Contacts"}
-        </h1>
-        {#if !selectedContact}
-            <button
-                class="ml-auto p-2 rounded-full hover:bg-gray-700 transition-colors"
-                onclick={() => (isAdding = !isAdding)}
-                aria-label="Add contact"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 4v16m8-8H4"
-                    />
-                </svg>
-            </button>
-        {/if}
-    </div>
+    {/if}
+{/snippet}
+
+<div class="flex h-full flex-col bg-gray-900 text-white">
+    <ScreenHeader title={getTitle()} onback={goBack} actions={headerActions} />
 
     <div class="flex-1 overflow-y-auto">
         {#if !selectedContact}
