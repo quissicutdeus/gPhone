@@ -1,4 +1,4 @@
-import { isBrowser } from './fetchNui';
+import { isBrowser } from './isBrowser';
 
 interface DebugEvent {
     action: string;

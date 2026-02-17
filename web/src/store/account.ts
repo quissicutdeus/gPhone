@@ -3,10 +3,22 @@ import { fetchNui } from "../utils/fetchNui";
 
 export const bankBalance = writable<number>(0);
 export const transactions = writable<any[]>([]);
+export const citizenid = writable<string>("");
+
+export const fetchCitizenId = async () => {
+    try {
+        const id = await fetchNui<string>("getCitizenId", null, { defaultValue: "" });
+        citizenid.set(id);
+        return id;
+    } catch (error) {
+        console.error("Failed to fetch citizenid:", error);
+        return "";
+    }
+};
 
 export const fetchBalance = async () => {
     try {
-        const balance = await fetchNui<number>("getBankBalance", null, 12450);
+        const balance = await fetchNui<number>("getBankBalance", null, { defaultValue: 0 });
         bankBalance.set(balance);
     } catch (error) {
         console.error("Failed to fetch bank balance:", error);
@@ -15,11 +27,9 @@ export const fetchBalance = async () => {
 
 export const fetchTransactions = async () => {
     try {
-        const data = await fetchNui<any[]>("getTransactions", null, [
-            { message: "Store Purchase", amount: -45, time: Math.floor(Date.now() / 1000), title: "Store" },
-            { message: "Salary", amount: 1500, time: Math.floor(Date.now() / 1000) - 86400, title: "Job" },
-            { message: "Transfer", amount: -200, time: Math.floor(Date.now() / 1000) - 172800, title: "Transfer" }
-        ]);
+        const data = await fetchNui<any[]>("getTransactions", null, {
+            defaultValue: []
+        });
         transactions.set(data);
     } catch (error) {
         console.error("Failed to fetch transactions:", error);

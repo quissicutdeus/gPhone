@@ -5,7 +5,7 @@
         fetchBalance,
         fetchTransactions,
     } from "../../store/account";
-    import ScreenHeader from "../../components/ScreenHeader.svelte";
+    import Screen from "../../components/Screen.svelte";
 
     let { onback } = $props();
 
@@ -13,18 +13,10 @@
         fetchBalance();
         fetchTransactions();
     });
-
-    const goBack = () => {
-        onback?.();
-    };
 </script>
 
-<div class="flex h-full flex-col bg-gray-900 text-white">
-    <!-- Header -->
-    <ScreenHeader title="Bank" {onback} />
-
-    <!-- Content -->
-    <div class="flex-1 overflow-y-auto p-4 no-scrollbar">
+<Screen title="Bank" {onback}>
+    <div class="p-4">
         <!-- Card -->
         <div
             class="bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl p-6 mb-8 shadow-lg"
@@ -108,4 +100,4 @@
             {/each}
         </div>
     </div>
-</div>
+</Screen>

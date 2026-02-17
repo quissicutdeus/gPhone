@@ -1,12 +1,8 @@
 <script lang="ts">
-    import ScreenHeader from "../../components/ScreenHeader.svelte";
+    import Screen from "../../components/Screen.svelte";
     import { mockEmails } from "../../mocks/data";
 
     let { onback } = $props();
-
-    const goBack = () => {
-        onback?.();
-    };
 </script>
 
 {#snippet headerActions()}
@@ -31,25 +27,19 @@
     </button>
 {/snippet}
 
-<div class="flex h-full flex-col bg-gray-900 text-white">
-    <!-- Header -->
-    <ScreenHeader title="Mail" {onback} actions={headerActions} />
-
-    <!-- Content -->
-    <div class="flex-1 overflow-y-auto">
-        <div class="divide-y divide-gray-800">
-            {#each mockEmails as email}
-                <div class="p-4 hover:bg-gray-800/50 transition-colors">
-                    <div class="flex items-baseline justify-between mb-1">
-                        <h3 class="font-bold text-blue-400">{email.sender}</h3>
-                        <span class="text-xs text-gray-500">{email.time}</span>
-                    </div>
-                    <h4 class="font-medium mb-1">{email.subject}</h4>
-                    <p class="text-sm text-gray-400 line-clamp-2">
-                        {email.content}
-                    </p>
+<Screen title="Mail" {onback} actions={headerActions}>
+    <div class="divide-y divide-gray-800">
+        {#each mockEmails as email}
+            <div class="p-4 hover:bg-gray-800/50 transition-colors">
+                <div class="flex items-baseline justify-between mb-1">
+                    <h3 class="font-bold text-blue-400">{email.sender}</h3>
+                    <span class="text-xs text-gray-500">{email.time}</span>
                 </div>
-            {/each}
-        </div>
+                <h4 class="font-medium mb-1">{email.subject}</h4>
+                <p class="text-sm text-gray-400 line-clamp-2">
+                    {email.content}
+                </p>
+            </div>
+        {/each}
     </div>
-</div>
+</Screen>

@@ -36,15 +36,11 @@ function createCallStore() {
 
             try {
                 await fetchNui("startCall", { number });
+                // In a real app, we might wait for a 'callConnected' event or similar
+                // But here we rely on the backend/mock to send events or updates.
+                // If using the registry, the mock can simulate the delay and return.
             } catch (e) {
                 console.error("Failed to start call", e);
-                // For dev/mocking purposes, we can simulate connection after a delay
-                if (import.meta.env.DEV) {
-                    setTimeout(() => {
-                        update(s => ({ ...s, status: "connected" }));
-                        startTimer();
-                    }, 2000);
-                }
             }
         },
         endCall: async () => {
