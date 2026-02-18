@@ -56,7 +56,7 @@
                             Favorites
                         </div>
                         <div
-                            class="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide"
+                            class="flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
                         >
                             {#each $favoriteContacts as fav}
                                 <button
@@ -278,7 +278,7 @@
             </div>
 
             <!-- End Call -->
-            <div class="mt-12 mb-8 flex space-x-8">
+            <div class="mt-12 mb-8 flex space-x-8 justify-center">
                 {#if $callStore.status === "incoming"}
                     <button
                         class="w-16 h-16 rounded-full bg-green-500 hover:bg-green-400 flex items-center justify-center transition-colors shadow-lg shadow-green-500/30"

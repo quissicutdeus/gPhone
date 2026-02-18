@@ -60,3 +60,12 @@ export interface Transaction {
     time: number;
     reason: string;
 }
+
+export interface Note {
+    id: number;
+    citizenid: string;
+    title: string;
+    content: string;
+    created_at: Date | string;
+    updated_at: Date | string;
+}

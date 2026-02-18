@@ -1,5 +1,5 @@
-import { mockContacts, mockConversations, mockMessages } from "./data";
-import type { Contact, Conversation, Message } from "@shared/types";
+import { mockContacts, mockConversations, mockMessages, mockNotes } from "./data";
+import type { Contact, Conversation, Message, Note } from "@shared/types";
 
 // Helper to simulate delays
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -29,6 +29,27 @@ export const mockRegistry: Record<string, MockHandler> = {
     },
     "shareContact": async () => {
         await delay(500);
+        return true;
+    },
+
+    // Notes
+    "getNotes": () => mockNotes,
+    "createNote": async (note: any) => {
+        await delay(300);
+        return {
+            ...note,
+            id: Math.random(),
+            citizenid: "mock-id",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        } as Note;
+    },
+    "updateNote": async (note: Note) => {
+        await delay(300);
+        return note;
+    },
+    "deleteNote": async () => {
+        await delay(300);
         return true;
     },
 

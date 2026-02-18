@@ -15,8 +15,7 @@ ui_page 'dist/web/index.html'
 
 files {
   'dist/web/index.html',
-  'dist/web/assets/*.js',
-  'dist/web/assets/*.css',
-  'dist/web/vite.svg', -- if applicable
+  'dist/web/assets/**/*',
+  'dist/web/*.svg',
 }
 

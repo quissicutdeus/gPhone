@@ -185,7 +185,7 @@
                     use:focus
                 />
             </div>
-            <div class="flex-1 overflow-y-auto">
+            <div class="flex-1 overflow-y-auto no-scrollbar">
                 {#each filteredContacts as contact}
                     <button
                         class="w-full flex items-center p-4 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 text-left"
@@ -215,7 +215,7 @@
             <!-- Messages List -->
             <div
                 id="messages-container"
-                class="flex-1 overflow-y-auto p-4 space-y-4"
+                class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar"
             >
                 {#each messages as msg}
                     <div
@@ -287,7 +287,7 @@
 
                     <div class="flex-1 relative">
                         <textarea
-                            class="w-full bg-gray-700/50 text-white rounded-2xl px-4 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none max-h-32 min-h-[40px] scrollbar-hide"
+                            class="w-full bg-gray-700/50 text-white rounded-2xl px-4 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none max-h-32 min-h-[40px] no-scrollbar"
                             placeholder="Message"
                             rows="1"
                             bind:value={newMessageText}
@@ -308,7 +308,7 @@
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5 text-white"
+                            class="h-5 w-5 text-white rotate-90"
                             viewBox="0 0 20 20"
                             fill="currentColor"
                         >

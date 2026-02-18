@@ -1,4 +1,23 @@
-import type { Contact, Conversation, Message } from "@shared/types";
+import type { Contact, Conversation, Message, Note } from "@shared/types";
+
+export const mockNotes: Note[] = [
+    {
+        id: 1,
+        citizenid: "1",
+        title: "Grocery List",
+        content: "- Milk\n- Eggs\n- Bread\n- Butter\n\n1. Number 1\n2. Number 2\n3. Number 3\n\n**Test** thing\n\n*italic*\n\n- item\n- item\n- item\n\n- [ ] task\n- [x] task\n- [ ] task\n\n# Heading 1\n## Heading 2\n### Heading 3\n#### Heading 4\n##### Heading 5\n###### Heading 6",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+    },
+    {
+        id: 2,
+        citizenid: "1",
+        title: "Project Ideas",
+        content: "# App Ideas\n\n## A note taking app\n### A weather app\n#### A music player",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+    },
+];
 
 export const mockContacts: Contact[] = [
     {

@@ -5,3 +5,4 @@ import './CallController';
 import './ContactController';
 import './ConversationController';
 import './MessageController';
+import './NoteController';
