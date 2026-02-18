@@ -1,8 +1,4 @@
-import './controllers/ContactController';
-import './controllers/MessageController';
-import './controllers/ConversationController';
-import './controllers/BankController';
-import './controllers/CallController';
+import './controllers';
 
 on("onResourceStart", (resName: string) => {
   if (resName === GetCurrentResourceName()) {

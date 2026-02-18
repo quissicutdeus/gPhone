@@ -1,8 +1,4 @@
-import './controllers/ContactController';
-import './controllers/MessageController';
-import './controllers/ConversationController';
-import './controllers/BankController';
-import './controllers/CallController';
+import './controllers';
 import { ClientApp } from './lib/ClientApp';
 
 let isPhoneOpen = false;

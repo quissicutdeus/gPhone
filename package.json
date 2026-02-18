@@ -5,11 +5,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "pnpm clearbuild && pnpm typecheck && node build/build-bundle.js && pnpm build:web",
+    "build": "pnpm clearbuild && pnpm typecheck && node scripts/generate-manifests.js && node build/build-bundle.js && pnpm build:web",
     "build:web": "cd web && pnpm install && pnpm build",
     "clearbuild": "rimraf ./dist",
     "typecheck": "tsc --noEmit -p client/tsconfig.json && tsc --noEmit -p server/tsconfig.json",
-    "watch": "pnpm clearbuild && cross-env IS_WATCH_MODE=1 node build/build-bundle.js",
+    "watch": "pnpm clearbuild && node scripts/generate-manifests.js && cross-env IS_WATCH_MODE=1 node build/build-bundle.js",
     "watch:web": "cd web && pnpm dev"
   },
   "author": "mbiddle",
