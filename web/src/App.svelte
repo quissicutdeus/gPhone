@@ -4,6 +4,7 @@
   import { time } from "./store/time";
   import { currentApp, openApp, goHome, closePhone } from "./store/navigation";
   import { callStore } from "./store/call";
+  import { isTakingPhoto } from "./store/camera";
   import PhoneFrame from "./components/PhoneFrame.svelte";
   import { registeredComponents } from "./store/registry";
   import Home from "./components/Home.svelte";
@@ -70,9 +71,14 @@
 
 {#if visible}
   <main
-    class="flex h-screen w-screen items-end justify-end overflow-hidden bg-transparent p-12"
+    class="flex h-screen w-screen items-end justify-end overflow-hidden p-12 transition-opacity duration-150"
+    class:opacity-0={$isTakingPhoto}
+    class:bg-transparent={true}
   >
-    <PhoneFrame {visible} onClose={closePhone}>
+    <PhoneFrame
+      transparent={$currentApp.name === "camera"}
+      onClose={closePhone}
+    >
       {#if $currentApp.name === "home"}
         <svelte:component this={components["home"]} {openApp} {closePhone} />
       {:else if components[$currentApp.name]}

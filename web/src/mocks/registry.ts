@@ -98,6 +98,9 @@ export const mockRegistry: Record<string, MockHandler> = {
     "answerCall": async () => { return true; },
     "toggleSpeaker": async () => { return true; },
 
+    // Camera
+    "takePhoto": () => "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", // 1x1 transparent pixel
+
     // Navigation
     "hideFrame": () => { },
 };
