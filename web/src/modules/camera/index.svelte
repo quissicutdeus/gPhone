@@ -6,29 +6,106 @@
 
     let photoUri = $state<string | null>(null);
 
+    let containerRef = $state<HTMLElement | null>(null);
+
     const takePhoto = async () => {
         isTakingPhoto.set(true);
 
-        // Small delay to allow Svelte to apply opacity-0 to the outer App frame
+        // Get the phone dimensions from the container before hiding it
+        const rect = containerRef?.getBoundingClientRect();
+
+        // Wait a single DOM frame (50ms) to allow the instantly-triggered `transition-none` opacity-0
+        // state to apply. We must capture instantly so the player's First Person breathing
+        // idle animation doesn't bob the camera away from their targeted subject.
         setTimeout(async () => {
             try {
                 // Returns a base64 encoded data URI string of the webp/jpg image
                 const base64Data = await fetchNui<string>("takePhoto");
-                photoUri = base64Data;
+
+                if (rect && base64Data) {
+                    // Create an offscreen image to load the full screenshot
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous";
+                    img.src = base64Data.startsWith("data:")
+                        ? base64Data
+                        : "data:image/jpeg;base64," + base64Data;
+
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = reject;
+                        setTimeout(
+                            () => reject(new Error("Image load timeout")),
+                            3000,
+                        );
+                    });
+
+                    // Since the UI squish bug is fixed, we can trust that the CSS grid aspect ratio
+                    // perfectly matches the FiveM Native screenshot output aspect ratio without assuming black bars.
+                    // We map the horizontal and vertical scaling independently to perfectly align the crop.
+                    const scaleX = img.naturalWidth / window.innerWidth;
+                    const scaleY = img.naturalHeight / window.innerHeight;
+
+                    // Math.round ensures the physical pixel boundaries perfectly map
+                    // to avoid drawing subpixel interpolated moire patterns during the canvas cutout.
+                    const physX = Math.round(rect.left * scaleX);
+                    const physY = Math.round(rect.top * scaleY);
+                    const physWidth = Math.round(rect.width * scaleX);
+                    const physHeight = Math.round(rect.height * scaleY);
+
+                    // Create canvas at the exact high resolution to avoid blurry scaling
+                    const canvas = document.createElement("canvas");
+                    canvas.width = physWidth;
+                    canvas.height = physHeight;
+
+                    const ctx = canvas.getContext("2d");
+                    if (ctx) {
+                        ctx.imageSmoothingEnabled = false; // Never bilinear filter a pristine native screenshot
+                        ctx.drawImage(
+                            img,
+                            physX, // source x
+                            physY, // source y
+                            physWidth, // source width
+                            physHeight, // source height
+                            0, // destination x
+                            0, // destination y
+                            physWidth, // destination width
+                            physHeight, // destination height
+                        );
+
+                        // Set the photo URI to the cropped image
+                        photoUri = canvas.toDataURL("image/jpg");
+                    } else {
+                        photoUri = base64Data; // fallback
+                    }
+                } else {
+                    photoUri = base64Data;
+                }
             } catch (err) {
                 console.error("Failed to take photo", err);
             } finally {
                 isTakingPhoto.set(false);
             }
-        }, 150);
+        }, 50);
     };
 
     const closePhoto = () => {
         photoUri = null;
     };
+
+    const handleKeydown = (e: KeyboardEvent) => {
+        if (e.key === "Enter" && !photoUri && !$isTakingPhoto) {
+            e.preventDefault();
+            takePhoto();
+        }
+    };
 </script>
 
-<div class="relative flex h-full w-full flex-col bg-transparent">
+<svelte:window onkeydown={handleKeydown} />
+
+<div
+    bind:this={containerRef}
+    class="relative flex h-full w-full flex-col bg-transparent"
+>
     {#if photoUri}
         <!-- Photo Preview Area -->
         <div class="absolute inset-0 z-50 bg-black">

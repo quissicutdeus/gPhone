@@ -59,7 +59,7 @@
         ></div>
 
         <!-- Content Area -->
-        <div class="h-full pt-8" class:pb-4={!transparent}>
+        <div class="h-full" class:pt-8={!transparent} class:pb-4={!transparent}>
             {@render children()}
         </div>
 
