@@ -4,6 +4,89 @@ import { ClientApp } from './lib/ClientApp';
 let isPhoneOpen = false;
 let isFreelookActive = false;
 let freelookTick: number | null = null;
+let phoneProp: number | null = null;
+let activeApp: string | null = null;
+let savedCameraViewMode: number | null = null;
+let currentAnimId = 0;
+
+interface AppState {
+  dict: string;
+  anim: string;
+  init?: () => void;
+  cleanup?: () => void;
+}
+
+const AppStates: Record<string, AppState> = {
+  camera: {
+    dict: 'amb@world_human_tourist_mobile@male@base',
+    anim: 'base',
+    init: () => {
+      savedCameraViewMode = GetFollowPedCamViewMode();
+      SetFollowPedCamViewMode(4);
+    },
+    cleanup: () => {
+      if (savedCameraViewMode !== null) {
+        SetFollowPedCamViewMode(savedCameraViewMode);
+        savedCameraViewMode = null;
+      }
+    }
+  },
+  default: {
+    dict: 'cellphone@',
+    anim: 'cellphone_text_read_base'
+  }
+};
+
+const playAppAnimation = async (ped: number, appName: string | null) => {
+  const animId = ++currentAnimId;
+  const state = appName && AppStates[appName] ? AppStates[appName] : AppStates.default;
+
+  await loadAnimDict(state.dict);
+
+  // Abort if another animation was requested or phone was closed while loading
+  if (animId !== currentAnimId || !isPhoneOpen) {
+    RemoveAnimDict(state.dict);
+    return;
+  }
+
+  if (appName && AppStates[appName] && AppStates[appName].init) {
+    AppStates[appName].init!();
+  }
+
+  TaskPlayAnim(ped, state.dict, state.anim, 8.0, 8.0, -1, 50, 0, false, false, false);
+  RemoveAnimDict(state.dict);
+};
+
+const stopAllPhoneAnimations = (ped: number) => {
+  currentAnimId++; // Cancel any pending animations
+  if (activeApp && AppStates[activeApp]) {
+    if (AppStates[activeApp].cleanup) {
+      AppStates[activeApp].cleanup!();
+    }
+    StopAnimTask(ped, AppStates[activeApp].dict, AppStates[activeApp].anim, 1.0);
+  }
+  activeApp = null;
+  StopAnimTask(ped, AppStates.default.dict, AppStates.default.anim, 1.0);
+};
+
+const delay = (ms: number) => new Promise(res => setTimeout(() => res(true), ms));
+
+const loadAnimDict = async (dict: string) => {
+  RequestAnimDict(dict);
+  while (!HasAnimDictLoaded(dict)) {
+    await delay(10);
+  }
+};
+
+const loadModel = async (model: string | number) => {
+  const hash = typeof model === 'string' ? GetHashKey(model) : model;
+  if (IsModelValid(hash)) {
+    RequestModel(hash);
+    while (!HasModelLoaded(hash)) {
+      await delay(10);
+    }
+  }
+};
 
 // Function to send time to NUI
 const sendTimeToNui = () => {
@@ -28,9 +111,27 @@ RegisterCommand('togglePhone', () => {
       action: 'setVisible',
       data: true
     }));
+
+    const ped = PlayerPedId();
+    playAppAnimation(ped, null);
+
+    loadModel('prop_npc_phone_02').then(() => {
+      if (!isPhoneOpen || phoneProp) return; // Phone was closed before model loaded, or prop already exists
+      const coords = GetEntityCoords(ped, true);
+      phoneProp = CreateObject(GetHashKey('prop_npc_phone_02'), coords[0], coords[1], coords[2], true, true, false);
+      AttachEntityToEntity(phoneProp, ped, GetPedBoneIndex(ped, 28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true);
+      SetModelAsNoLongerNeeded(GetHashKey('prop_npc_phone_02'));
+    });
     // Send time immediately when opening
     sendTimeToNui();
   } else {
+    const ped = PlayerPedId();
+    if (phoneProp) {
+      DeleteObject(phoneProp);
+      phoneProp = null;
+    }
+    stopAllPhoneAnimations(ped);
+
     isFreelookActive = false;
     SetNuiFocusKeepInput(false);
     SetNuiFocus(false, false);
@@ -87,6 +188,14 @@ on('__cfx_nui:toggleFreelook', (data: { state: boolean }, cb: Function) => {
 RegisterNuiCallbackType('hideFrame');
 on('__cfx_nui:hideFrame', (_: any, cb: Function) => {
   isPhoneOpen = false;
+
+  const ped = PlayerPedId();
+  if (phoneProp) {
+    DeleteObject(phoneProp);
+    phoneProp = null;
+  }
+  stopAllPhoneAnimations(ped);
+
   isFreelookActive = false;
   SetNuiFocusKeepInput(false);
   SetNuiFocus(false, false);
@@ -101,19 +210,19 @@ on('__cfx_nui:hideFrame', (_: any, cb: Function) => {
   cb({});
 });
 
-let savedCameraViewMode: number | null = null;
 RegisterNuiCallbackType('onCameraApp');
-on('__cfx_nui:onCameraApp', (data: { state: boolean }, cb: Function) => {
+on('__cfx_nui:onCameraApp', async (data: { state: boolean }, cb: Function) => {
+  const ped = PlayerPedId();
   if (data.state) {
-    // Save current view mode and force first person (4)
-    savedCameraViewMode = GetFollowPedCamViewMode();
-    SetFollowPedCamViewMode(4);
+    activeApp = 'camera';
+    await playAppAnimation(ped, activeApp);
   } else {
-    // Restore previous view mode
-    if (savedCameraViewMode !== null) {
-      SetFollowPedCamViewMode(savedCameraViewMode);
-      savedCameraViewMode = null;
+    if (activeApp === 'camera') {
+      if (AppStates.camera.cleanup) AppStates.camera.cleanup();
+      StopAnimTask(ped, AppStates.camera.dict, AppStates.camera.anim, 1.0);
+      activeApp = null;
     }
+    await playAppAnimation(ped, null);
   }
   cb({});
 });
