@@ -6,9 +6,13 @@
   "type": "module",
   "scripts": {
     "build": "pnpm clearbuild && pnpm typecheck && node scripts/generate-manifests.js && node build/build-bundle.js && pnpm build:web",
-    "build:web": "pnpm --filter web install && pnpm --filter web build",
-    "clearbuild": "rimraf ./dist",
-    "typecheck": "tsc --noEmit -p client/tsconfig.json && tsc --noEmit -p server/tsconfig.json && pnpm --filter web check",
+    "build:web": "pnpm --filter web build",
+    "clearbuild": "node -e \"const fs = require('fs'); fs.rmSync('./dist', { recursive: true, force: true });\"",
+    "dev": "concurrently -c \"cyan,magenta\" -n \"fivem,vite\" \"pnpm watch\" \"pnpm watch:web\"",
+    "typecheck:client": "tsc --noEmit -p client/tsconfig.json",
+    "typecheck:server": "tsc --noEmit -p server/tsconfig.json",
+    "typecheck:web": "pnpm --filter web check",
+    "typecheck": "run-p typecheck:*",
     "watch": "pnpm clearbuild && node scripts/generate-manifests.js && cross-env IS_WATCH_MODE=1 node build/build-bundle.js",
     "watch:web": "pnpm --filter web dev"
   },
@@ -17,10 +21,11 @@
   "devDependencies": {
     "@citizenfx/client": "2.0.22934-1",
     "@citizenfx/server": "2.0.22934-1",
-    "@types/node": "^24.10.3",
+    "@types/node": "^25.5.0",
+    "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
-    "esbuild": "^0.27.1",
-    "rimraf": "^6.1.2",
+    "esbuild": "^0.27.4",
+    "npm-run-all": "^4.1.5",
     "typescript": "^5.9.3"
   }
 }
