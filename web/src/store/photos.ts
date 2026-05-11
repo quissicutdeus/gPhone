@@ -15,7 +15,7 @@ function createPhotosStore() {
                     console.log("Photo 0 image type:", typeof data[0].image);
                     console.log("Photo 0 image substring:", String(data[0].image).substring(0, 50));
                 }
-                
+
                 // Sort photos by created_at descending (newest first)
                 set(data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
             } else {
@@ -23,7 +23,7 @@ function createPhotosStore() {
                 set([]);
             }
         },
-        add: async (photo: Omit<Photo, "id" | "citizenid" | "created_at">) => {
+        add: async (photo: Omit<Photo, "id" | "citizenid" | "created_at" | "updated_at">) => {
             try {
                 const newPhoto = await fetchNui<Photo>("createPhoto", photo);
                 if (newPhoto) {

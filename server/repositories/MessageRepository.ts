@@ -18,8 +18,8 @@ export class MessageRepository extends Repository<Message> {
             for (const attachment of data.attachments) {
                 if (attachment.attachment) {
                     await Database.insert(
-                        'INSERT INTO gphone_messages_attachments (message_id, attachment) VALUES (?, ?)',
-                        [messageId, attachment.attachment] // blob/string
+                        'INSERT INTO gphone_messages_attachments (message_id, citizenid, attachment) VALUES (?, ?, ?)',
+                        [messageId, data.citizenid, attachment.attachment] // blob/string
                     );
                 }
             }
@@ -34,7 +34,7 @@ export class MessageRepository extends Repository<Message> {
     async findByConversation(conversationId: number): Promise<Message[]> {
         // Fetch messages
         const messages = await Database.query<Message[]>(
-            'SELECT * FROM gphone_messages WHERE conversation_id = ? AND status != 0 ORDER BY created_at ASC',
+            "SELECT * FROM gphone_messages WHERE conversation_id = ? AND status != 'deleted' ORDER BY created_at ASC",
             [conversationId]
         );
 

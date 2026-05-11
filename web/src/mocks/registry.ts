@@ -64,7 +64,7 @@ export const mockRegistry: Record<string, MockHandler> = {
             id: Math.random(),
             conversation_id: payload.conversation_id,
             citizenid: "my-id",
-            status: 1,
+            status: "active",
             message: payload.message,
             attachments: (payload.attachments || []).map((a: any, i: number) => ({ ...a, id: i })),
             created_at: new Date().toISOString(),
@@ -75,8 +75,9 @@ export const mockRegistry: Record<string, MockHandler> = {
         await delay(300);
         return {
             id: Math.random(),
+            citizenid: "my-id",
             is_group: is_group || false,
-            status: 1,
+            status: "active",
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             participants: []

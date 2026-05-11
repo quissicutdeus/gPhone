@@ -25,7 +25,7 @@ app.registerEvent('send', async (source, cbId, data, citizenid) => {
         attachments: data.attachments || [], // Array of { attachment }
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        status: 1
+        status: 'active'
     };
 
     const id = await messageRepo.create(newMessage);

@@ -7,7 +7,7 @@ const app = new ServerApp<Photo>('photos', photoRepo, { disableDelete: true, dis
 
 app.registerEvent('get', async (source: number, cbId: any, data: any, citizenid: string) => {
     // Only return visible photos
-    const result = await photoRepo.findAll({ ...data, citizenid, status: 'visible' } as any);
+    const result = await photoRepo.findAll({ ...data, citizenid, status: 'active' } as any);
     return result;
 });
 

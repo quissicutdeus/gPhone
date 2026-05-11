@@ -96,6 +96,7 @@ app.registerEvent('create', async (source, cbId, data, citizenid) => {
 
     // Create new
     const newConv: Partial<Conversation> = {
+        citizenid: citizenid,
         is_group: !!data.is_group,
         // Use provided name, or resolved name, or fallback to data.participant logic (safely)
         name: data.name || targetName || (typeof data.participant === 'object' ? `${data.participant.firstname} ${data.participant.lastname}` : null)
@@ -138,12 +139,11 @@ app.registerEvent('delete', async (source, cbId, id, citizenid) => {
 
     if (self.role === 'admin') {
         // Admin deletes (soft delete)
-        // Update conversation status = 0
-        return await conversationRepo.update(id, { status: 0 });
+        // Update conversation status = 'deleted'
+        return await conversationRepo.update(id, { status: 'deleted' });
     } else {
-        // Member leaves
-        // Insert new row with status 0 (Left Voluntarily)
-        await conversationRepo.removeParticipant(id, citizenid, 0);
+        // Insert new row with status 'left' (Left Voluntarily)
+        await conversationRepo.removeParticipant(id, citizenid, 'left');
         return true;
     }
 });

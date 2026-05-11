@@ -13,9 +13,10 @@ export interface Contact {
 
 export interface Conversation {
     id: number;
+    citizenid: string;
     is_group: boolean;
     name?: string;
-    status: number; // 1=Active, -1=Moderated, 0=Archived, 2=Deleted
+    status?: 'active' | 'archived' | 'deleted' | 'moderated';
     created_at: Date | string;
     updated_at: Date | string;
     participants?: Participant[];
@@ -28,7 +29,7 @@ export interface Participant {
     conversation_id: number;
     citizenid: string;
     role: 'admin' | 'member';
-    status: number; // 1=Active, -1=Moderated, 0=Left, 2=Removed
+    status?: 'active' | 'left' | 'removed' | 'moderated';
     last_read: Date | string;
     created_at: Date | string;
     left_at?: Date | string | null;
@@ -40,7 +41,7 @@ export interface Message {
     id: number;
     conversation_id: number;
     citizenid: string; // Sender
-    status: number; // 1=Live, -1=Moderated, 0=Deleted
+    status?: 'active' | 'deleted' | 'moderated';
     message: string;
     created_at: Date | string;
     updated_at: Date | string;
@@ -74,7 +75,7 @@ export interface Photo {
     id: number;
     citizenid: string;
     image: string; // Base64 string
-    status?: 'visible' | 'deleted' | 'moderated';
+    status?: 'active' | 'deleted' | 'moderated';
     created_at: Date | string;
     updated_at: Date | string;
 }

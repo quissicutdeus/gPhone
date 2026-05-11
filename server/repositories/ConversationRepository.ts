@@ -12,12 +12,12 @@ export class ConversationRepository extends Repository<Conversation> {
     async addParticipant(conversationId: number, citizenid: string, role: 'admin' | 'member' = 'member') {
         // Insert new session row
         return await Database.insert(
-            'INSERT INTO gphone_messages_participants (conversation_id, citizenid, role, left_at, status) VALUES (?, ?, ?, NULL, 1)',
+            "INSERT INTO gphone_messages_participants (conversation_id, citizenid, role, left_at, status) VALUES (?, ?, ?, NULL, 'active')",
             [conversationId, citizenid, role]
         );
     }
 
-    async removeParticipant(conversationId: number, citizenid: string, status: number = 2) {
+    async removeParticipant(conversationId: number, citizenid: string, status: string = 'removed') {
         // Find existing active session (left_at IS NULL) and close it
         // Status: 1=Active, -1=Moderated, 0=Left, 2=Removed
         const query = `
@@ -49,13 +49,13 @@ export class ConversationRepository extends Repository<Conversation> {
             FROM gphone_messages_conversations c
             LEFT JOIN gphone_messages m ON m.id = (
                 SELECT id FROM gphone_messages 
-                WHERE conversation_id = c.id AND status != 0 
+                WHERE conversation_id = c.id AND status != 'deleted' 
                 ORDER BY created_at DESC LIMIT 1
             )
             WHERE EXISTS (
                 SELECT 1 FROM gphone_messages_participants p 
                 WHERE p.conversation_id = c.id AND p.citizenid = ? AND p.left_at IS NULL
-            ) AND c.status = 1
+            ) AND c.status = 'active'
             ORDER BY c.updated_at DESC
         `;
         const results = await Database.query<any[]>(query, [citizenid]);
@@ -76,7 +76,7 @@ export class ConversationRepository extends Repository<Conversation> {
         const query = `
             SELECT c.*
             FROM gphone_messages_conversations c
-            WHERE c.is_group = 0 AND c.status = 1
+            WHERE c.is_group = 0 AND c.status = 'active'
             AND EXISTS (
                 SELECT 1 FROM gphone_messages_participants p1
                 WHERE p1.conversation_id = c.id AND p1.citizenid = ? AND p1.left_at IS NULL
