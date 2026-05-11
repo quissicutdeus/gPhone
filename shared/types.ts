@@ -45,7 +45,7 @@ export interface Message {
     message: string;
     created_at: Date | string;
     updated_at: Date | string;
-    attachments?: { id: number; attachment: string }[]; // attachment is base64
+    attachments?: { id?: number; attachment?: string; photo_id?: number }[]; // attachment is base64 for read, photo_id for creation
 }
 
 export interface PlayerTransaction {

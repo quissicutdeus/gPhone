@@ -16,10 +16,10 @@ export class MessageRepository extends Repository<Message> {
         // 2. Insert Attachments if any
         if (data.attachments && data.attachments.length > 0) {
             for (const attachment of data.attachments) {
-                if (attachment.attachment) {
+                if (attachment.photo_id) {
                     await Database.insert(
-                        'INSERT INTO gphone_messages_attachments (message_id, citizenid, attachment) VALUES (?, ?, ?)',
-                        [messageId, data.citizenid, attachment.attachment] // blob/string
+                        'INSERT INTO gphone_messages_attachments (message_id, citizenid, photo_id) VALUES (?, ?, ?)',
+                        [messageId, data.citizenid, attachment.photo_id]
                     );
                 }
             }
@@ -41,9 +41,9 @@ export class MessageRepository extends Repository<Message> {
         if (messages.length === 0) return [];
 
         // Fetch attachments for these messages
-        // Join might be easier but let's stick to this logic for now to avoid mapping headaches
+        // Join to gphone_photos to retrieve the image data
         const attachments = await Database.query<any[]>(
-            'SELECT a.id, a.message_id, a.attachment FROM gphone_messages_attachments a JOIN gphone_messages m ON a.message_id = m.id WHERE m.conversation_id = ?',
+            'SELECT a.id, a.message_id, p.image as attachment FROM gphone_messages_attachments a JOIN gphone_messages m ON a.message_id = m.id JOIN gphone_photos p ON a.photo_id = p.id WHERE m.conversation_id = ?',
             [conversationId]
         );
 

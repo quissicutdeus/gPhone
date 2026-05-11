@@ -68,12 +68,14 @@ CREATE TABLE IF NOT EXISTS `gphone_messages_attachments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `message_id` int(11) NOT NULL,
   `citizenid` varchar(50) NOT NULL,
-  `attachment` MEDIUMBLOB NOT NULL,
+  `photo_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `message_id` (`message_id`),
   KEY `citizenid` (`citizenid`),
+  KEY `photo_id` (`photo_id`),
   CONSTRAINT `fk_attachments_message` FOREIGN KEY (`message_id`) REFERENCES `gphone_messages` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_attachments_citizenid` FOREIGN KEY (`citizenid`) REFERENCES `players` (`citizenid`) ON DELETE CASCADE
+  CONSTRAINT `fk_attachments_citizenid` FOREIGN KEY (`citizenid`) REFERENCES `players` (`citizenid`) ON DELETE CASCADE,
+  CONSTRAINT `fk_attachments_photo` FOREIGN KEY (`photo_id`) REFERENCES `gphone_photos` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `gphone_notes` (
