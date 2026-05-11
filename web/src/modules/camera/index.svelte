@@ -1,6 +1,7 @@
 <script lang="ts">
     import { isTakingPhoto } from "../../store/camera";
     import { fetchNui } from "../../utils/fetchNui";
+    import { photos } from "../../store/photos";
 
     let { onback } = $props<{ onback: () => void }>();
 
@@ -73,12 +74,15 @@
                         );
 
                         // Set the photo URI to the cropped image
-                        photoUri = canvas.toDataURL("image/jpg");
+                        photoUri = canvas.toDataURL("image/jpeg", 0.5);
+                        await photos.add({ image: photoUri });
                     } else {
                         photoUri = base64Data; // fallback
+                        await photos.add({ image: photoUri });
                     }
                 } else {
                     photoUri = base64Data;
+                    await photos.add({ image: photoUri });
                 }
             } catch (err) {
                 console.error("Failed to take photo", err);

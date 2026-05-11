@@ -7,3 +7,4 @@ import './ContactController';
 import './ConversationController';
 import './MessageController';
 import './NoteController';
+import './PhotoController';

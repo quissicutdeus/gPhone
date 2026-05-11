@@ -69,3 +69,12 @@ export interface Note {
     created_at: Date | string;
     updated_at: Date | string;
 }
+
+export interface Photo {
+    id: number;
+    citizenid: string;
+    image: string; // Base64 string
+    status?: 'visible' | 'deleted' | 'moderated';
+    created_at: Date | string;
+    updated_at: Date | string;
+}
