@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [svelte(), tailwindcss()],
   base: './',
   resolve: {
     alias: {
@@ -14,5 +15,6 @@ export default defineConfig({
   build: {
     outDir: '../dist/web',
     emptyOutDir: true,
+    target: 'chrome92',
   }
 })

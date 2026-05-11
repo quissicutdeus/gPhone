@@ -20,7 +20,6 @@
     "allowJs": true,
     "checkJs": true,
     "moduleDetection": "force",
-    "baseUrl": ".",
     "paths": {
       "@shared/*": [
         "../shared/*"
