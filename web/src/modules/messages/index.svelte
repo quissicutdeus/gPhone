@@ -7,8 +7,9 @@
         type UIConversation,
     } from "../../store/messages";
     import { contacts } from "../../store/contacts";
+    import { photos } from "../../store/photos";
     import { fade, fly } from "svelte/transition";
-    import type { Contact } from "@shared/types";
+    import type { Contact, Photo } from "@shared/types";
 
     let { onback, initialContact } = $props<{
         onback?: () => void;
@@ -21,6 +22,8 @@
     let newMessageText = $state("");
     let recipientQuery = $state(""); // For searching contacts when composing
     let showAttachMenu = $state(false);
+    let showPhotoPicker = $state(false);
+    let selectedAttachments = $state<{ photo_id: number; image: string }[]>([]);
 
     // Derived values
     let conversations = $derived($messagesStore);
@@ -57,6 +60,8 @@
             newMessageText = "";
             recipientQuery = "";
             showAttachMenu = false;
+            showPhotoPicker = false;
+            selectedAttachments = [];
         } else {
             onback?.();
         }
@@ -96,15 +101,30 @@
         }
     };
 
+    const openPhotoPicker = async () => {
+        await photos.load();
+        showPhotoPicker = true;
+        showAttachMenu = false;
+    };
+
     const handleSendMessage = async () => {
-        if (!newMessageText.trim() || !selectedConversationId) return;
+        if (
+            (!newMessageText.trim() && selectedAttachments.length === 0) ||
+            !selectedConversationId
+        )
+            return;
 
         try {
             await messagesStore.sendMessage(
                 selectedConversationId,
                 newMessageText,
+                selectedAttachments.map((att) => ({
+                    photo_id: att.photo_id,
+                    attachment: att.image,
+                })),
             );
             newMessageText = "";
+            selectedAttachments = [];
             await tick();
             scrollToBottom();
         } catch (e) {
@@ -136,10 +156,10 @@
         return "Messages";
     };
 
-    const formatTime = (isoString?: string | Date) => {
+    const formatTime = (isoString?: string | number | Date) => {
         if (!isoString) return "";
         const date =
-            typeof isoString === "string" ? new Date(isoString) : isoString;
+            isoString instanceof Date ? isoString : new Date(isoString);
         return date.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -286,6 +306,47 @@
                     </button>
 
                     <div class="flex-1 relative">
+                        {#if selectedAttachments.length > 0}
+                            <div
+                                class="flex gap-2 mb-2 p-1 overflow-x-auto no-scrollbar"
+                            >
+                                {#each selectedAttachments as att}
+                                    <div
+                                        class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-gray-600"
+                                    >
+                                        <img
+                                            src={att.image}
+                                            alt="Attachment"
+                                            class="w-full h-full object-cover"
+                                        />
+                                        <button
+                                            class="absolute top-0 right-0 bg-black/60 text-white p-0.5 rounded-bl-lg hover:bg-black"
+                                            onclick={() =>
+                                                (selectedAttachments =
+                                                    selectedAttachments.filter(
+                                                        (a) =>
+                                                            a.photo_id !==
+                                                            att.photo_id,
+                                                    ))}
+                                            aria-label="Remove attachment"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                class="h-3 w-3"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path
+                                                    fill-rule="evenodd"
+                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                {/each}
+                            </div>
+                        {/if}
                         <textarea
                             class="w-full bg-gray-700/50 text-white rounded-2xl px-4 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none max-h-32 min-h-[40px] no-scrollbar"
                             placeholder="Message"
@@ -303,7 +364,8 @@
                     <button
                         class="p-2 bg-blue-600 rounded-full hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20"
                         onclick={handleSendMessage}
-                        disabled={!newMessageText.trim()}
+                        disabled={!newMessageText.trim() &&
+                            selectedAttachments.length === 0}
                         aria-label="Send"
                     >
                         <svg
@@ -326,6 +388,7 @@
                     >
                         <button
                             class="flex flex-col items-center justify-center p-3 hover:bg-gray-700/50 rounded-lg transition-colors"
+                            onclick={openPhotoPicker}
                         >
                             <div
                                 class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-1"
@@ -369,6 +432,69 @@
                     </div>
                 {/if}
             </div>
+
+            {#if showPhotoPicker}
+                <div
+                    class="absolute inset-0 bg-gray-900 z-50 flex flex-col"
+                    transition:fly={{ y: 20, duration: 200 }}
+                >
+                    <div
+                        class="flex items-center justify-between p-4 border-b border-gray-800"
+                    >
+                        <h3 class="font-semibold text-lg">Select Photo</h3>
+                        <button
+                            class="p-2 hover:bg-gray-800 rounded-full"
+                            onclick={() => (showPhotoPicker = false)}
+                            aria-label="Close photo picker"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                    <div
+                        class="flex-1 overflow-y-auto p-2 grid grid-cols-3 gap-2 content-start"
+                    >
+                        {#each $photos as photo}
+                            <button
+                                class="aspect-square bg-gray-800 rounded-lg overflow-hidden relative"
+                                onclick={() => {
+                                    selectedAttachments = [
+                                        ...selectedAttachments,
+                                        {
+                                            photo_id: photo.id,
+                                            image: photo.image,
+                                        },
+                                    ];
+                                    showPhotoPicker = false;
+                                }}
+                            >
+                                <img
+                                    src={photo.image}
+                                    class="w-full h-full object-cover"
+                                    alt=""
+                                />
+                            </button>
+                        {/each}
+                        {#if $photos.length === 0}
+                            <div
+                                class="col-span-3 text-center text-gray-500 py-10 text-sm"
+                            >
+                                No photos found.
+                            </div>
+                        {/if}
+                    </div>
+                </div>
+            {/if}
         </div>
     {:else}
         <!-- Conversation List -->

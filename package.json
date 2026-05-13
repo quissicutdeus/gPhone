@@ -19,9 +19,9 @@
   "author": "mbiddle",
   "license": "MIT",
   "devDependencies": {
-    "@citizenfx/client": "2.0.29199-1",
-    "@citizenfx/server": "2.0.29199-1",
-    "@types/node": "^25.6.2",
+    "@citizenfx/client": "2.0.29368-1",
+    "@citizenfx/server": "2.0.29368-1",
+    "@types/node": "^25.7.0",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
     "esbuild": "^0.28.0",
