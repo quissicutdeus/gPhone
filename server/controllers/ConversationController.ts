@@ -2,8 +2,10 @@ import { ConversationRepository } from '../repositories/ConversationRepository';
 import { ServerApp } from '../lib/ServerApp';
 import { Conversation } from '@shared/types';
 import { Database } from '../lib/Database';
+import { AuditLogger } from '../lib/AuditLogger';
 
 const conversationRepo = new ConversationRepository();
+
 const app = new ServerApp<Conversation>('conversations', conversationRepo, {
     disableGet: true,
     disableCreate: true, // Custom logic needed
@@ -140,10 +142,29 @@ app.registerEvent('delete', async (source, cbId, id, citizenid) => {
     if (self.role === 'admin') {
         // Admin deletes (soft delete)
         // Update conversation status = 'deleted'
-        return await conversationRepo.update(id, { status: 'deleted' });
+        const success = await conversationRepo.update(id, { status: 'deleted' });
+        if (success) {
+            await AuditLogger.log({
+                citizenid,
+                action: 'deleted',
+                controller: 'ConversationController',
+                method: 'delete',
+                targetId: Number(id),
+                targetTable: 'gphone_messages_conversations'
+            });
+        }
+        return success;
     } else {
         // Insert new row with status 'left' (Left Voluntarily)
         await conversationRepo.removeParticipant(id, citizenid, 'left');
+        await AuditLogger.log({
+            citizenid,
+            action: 'left',
+            controller: 'ConversationController',
+            method: 'delete',
+            targetId: Number(id),
+            targetTable: 'gphone_messages_participants'
+        });
         return true;
     }
 });

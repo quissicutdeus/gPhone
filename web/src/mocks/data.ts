@@ -1,4 +1,15 @@
-import type { Contact, Conversation, Mail, Message, Note } from "@shared/types";
+import type { Contact, Conversation, Mail, Message, Note, Photo } from "@shared/types";
+
+export const mockPhotos: Photo[] = [
+    {
+        id: 1,
+        citizenid: "mock-id",
+        image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+        status: "active",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+    }
+];
 
 export const mockNotes: Note[] = [
     {

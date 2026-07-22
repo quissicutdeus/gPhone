@@ -1,10 +1,12 @@
 import { Repository } from './Repository';
+import { AuditLogger } from './AuditLogger';
 
 export interface ServerAppOptions {
     disableGet?: boolean;
     disableCreate?: boolean;
     disableUpdate?: boolean;
     disableDelete?: boolean;
+    tableName?: string;
 }
 
 export class ServerApp<T> {
@@ -44,6 +46,16 @@ export class ServerApp<T> {
             this.registerEvent('delete', async (source: number, cbId: any, data: any, citizenid: string) => {
                 if (!data.id) throw new Error("ID required for delete");
                 const success = await this.repo.delete(data.id);
+                if (success) {
+                    await AuditLogger.log({
+                        citizenid,
+                        action: 'deleted',
+                        controller: `${this.appName}Controller`,
+                        method: 'delete',
+                        targetId: Number(data.id),
+                        targetTable: this.options.tableName || `gphone_${this.appName}`
+                    });
+                }
                 return success;
             });
         }

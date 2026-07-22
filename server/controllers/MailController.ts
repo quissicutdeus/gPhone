@@ -1,6 +1,7 @@
 import { MailRepository } from '../repositories/MailRepository';
 import { ServerApp } from '../lib/ServerApp';
 import { Mail } from '@shared/types';
+import { AuditLogger } from '../lib/AuditLogger';
 
 const mailRepo = new MailRepository();
 const app = new ServerApp<Mail>('mail', mailRepo, {
@@ -21,15 +22,36 @@ app.registerEvent('markAsRead', async (source, cbId, data, citizenid) => {
 
 app.registerEvent('archiveMail', async (source, cbId, data, citizenid) => {
     if (!data.id) throw new Error('Email ID required');
-    return await mailRepo.archive(Number(data.id), citizenid, data.archive !== false);
+    const shouldArchive = data.archive !== false;
+    const success = await mailRepo.archive(Number(data.id), citizenid, shouldArchive);
+    if (success) {
+        await AuditLogger.log({
+            citizenid,
+            action: shouldArchive ? 'archived' : 'unarchived',
+            controller: 'MailController',
+            method: 'archiveMail',
+            targetId: Number(data.id),
+            targetTable: 'gphone_mail'
+        });
+    }
+    return success;
 });
 
 app.registerEvent('deleteMail', async (source, cbId, data, citizenid) => {
     if (!data.id) throw new Error('Email ID required');
-    return await mailRepo.delete(Number(data.id), citizenid);
+    const success = await mailRepo.delete(Number(data.id), citizenid);
+    if (success) {
+        await AuditLogger.log({
+            citizenid,
+            action: 'deleted',
+            controller: 'MailController',
+            method: 'deleteMail',
+            targetId: Number(data.id),
+            targetTable: 'gphone_mail'
+        });
+    }
+    return success;
 });
-
-
 
 /**
  * Global Server Export: SendSystemEmail

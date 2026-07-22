@@ -1,5 +1,5 @@
-import { mockContacts, mockConversations, mockEmails, mockMessages, mockNotes } from "./data";
-import type { Contact, Conversation, Mail, Message, Note } from "@shared/types";
+import { mockContacts, mockConversations, mockEmails, mockMessages, mockNotes, mockPhotos } from "./data";
+import type { Contact, Conversation, Mail, Message, Note, Photo } from "@shared/types";
 
 // Helper to simulate delays
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -99,8 +99,29 @@ export const mockRegistry: Record<string, MockHandler> = {
     "answerCall": async () => { return true; },
     "toggleSpeaker": async () => { return true; },
 
-    // Camera
+    // Camera & Photos
     "takePhoto": () => "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", // 1x1 transparent pixel
+    "onCameraApp": async () => true,
+    "getPhotos": () => mockPhotos.filter(p => p.status !== 'deleted'),
+    "createPhoto": async (photo: any) => {
+        await delay(300);
+        const newPhoto: Photo = {
+            ...photo,
+            id: Math.random(),
+            citizenid: "mock-id",
+            status: "active",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+        mockPhotos.unshift(newPhoto);
+        return newPhoto;
+    },
+    "deletePhoto": async (data: { id: number }) => {
+        await delay(300);
+        const item = mockPhotos.find(p => p.id === data.id);
+        if (item) item.status = 'deleted';
+        return true;
+    },
 
     // Mail
     "getMail": () => mockEmails.filter(e => e.status !== 'deleted'),
