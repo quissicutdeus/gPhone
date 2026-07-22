@@ -7,6 +7,7 @@ export interface Contact {
     email?: string;
     avatar?: string; // Base64 string from blob
     favorite: boolean;
+    status?: 'active' | 'deleted' | 'moderated';
     created_at: Date | string;
     updated_at: Date | string;
 }
@@ -67,6 +68,7 @@ export interface Note {
     citizenid: string;
     title: string;
     content: string;
+    status?: 'active' | 'archived' | 'deleted' | 'moderated';
     created_at: Date | string;
     updated_at: Date | string;
 }
@@ -79,3 +81,17 @@ export interface Photo {
     created_at: Date | string;
     updated_at: Date | string;
 }
+
+export interface Mail {
+    id: number;
+    citizenid: string;
+    sender: string;
+    sender_address?: string;
+    subject: string;
+    content: string;
+    status?: 'active' | 'archived' | 'deleted' | 'moderated';
+    read: boolean;
+    created_at: Date | string;
+    updated_at: Date | string;
+}
+

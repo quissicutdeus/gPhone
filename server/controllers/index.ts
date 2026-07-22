@@ -4,6 +4,7 @@ import './BankController';
 import './CallController';
 import './ContactController';
 import './ConversationController';
+import './MailController';
 import './MessageController';
 import './NoteController';
 import './PhotoController';

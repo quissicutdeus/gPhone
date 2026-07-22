@@ -5,6 +5,7 @@ import './CallController';
 import './CameraController';
 import './ContactController';
 import './ConversationController';
+import './MailController';
 import './MessageController';
 import './NoteController';
 import './PhotoController';

@@ -1,4 +1,4 @@
-import type { Contact, Conversation, Message, Note } from "@shared/types";
+import type { Contact, Conversation, Mail, Message, Note } from "@shared/types";
 
 export const mockNotes: Note[] = [
     {
@@ -152,37 +152,41 @@ export const mockMessages: Record<number, Message[]> = {
     ],
 };
 
-export const mockEmails = [
+export const mockEmails: Mail[] = [
     {
         id: 1,
-        sender: "Boss",
-        subject: "Project Update",
-        content: "We need to discuss the latest metrics. They are looking good but we can do better.",
-        time: "10:30 AM",
+        citizenid: "mock-id",
+        sender: "Fleeca Bank",
+        sender_address: "alerts@fleeca.com",
+        subject: "Account Statement Available",
+        content: "Your monthly bank statement for account #4242 is now ready to view. Balance: $15,450.00.",
+        status: "active",
         read: false,
+        created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+        updated_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
     },
     {
         id: 2,
-        sender: "HR",
-        subject: "Benefits Enrollment",
-        content: "Just a reminder that benefits enrollment ends this Friday.",
-        time: "Yesterday",
+        citizenid: "mock-id",
+        sender: "Los Santos Police Dept",
+        sender_address: "no-reply@lspd.gov",
+        subject: "Traffic Citation Notice",
+        content: "Notice: Citation #90214 has been registered for your vehicle. Please settle all outstanding balances at the City Hall clerk's office.",
+        status: "active",
         read: true,
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     },
     {
         id: 3,
-        sender: "Newsletter",
-        subject: "Weekly Tech Digest",
-        content: "Top stories: New AI models, Rust in the kernel, and more.",
-        time: "Yesterday",
+        citizenid: "mock-id",
+        sender: "Dynasty 8 Executive",
+        sender_address: "sales@dynasty8realestate.com",
+        subject: "Property Listing Update",
+        content: "New luxury apartment listings are now available in Rockford Hills. Contact an agent for private showings.",
+        status: "active",
         read: true,
-    },
-    {
-        id: 4,
-        sender: "Spam Bot",
-        subject: "You won a prize!",
-        content: "Click here to claim your $1,000,000 prize now!",
-        time: "2 days ago",
-        read: true,
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+        updated_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
     },
 ];

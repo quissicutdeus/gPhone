@@ -1,5 +1,5 @@
-import { mockContacts, mockConversations, mockMessages, mockNotes } from "./data";
-import type { Contact, Conversation, Message, Note } from "@shared/types";
+import { mockContacts, mockConversations, mockEmails, mockMessages, mockNotes } from "./data";
+import type { Contact, Conversation, Mail, Message, Note } from "@shared/types";
 
 // Helper to simulate delays
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -101,6 +101,28 @@ export const mockRegistry: Record<string, MockHandler> = {
 
     // Camera
     "takePhoto": () => "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", // 1x1 transparent pixel
+
+    // Mail
+    "getMail": () => mockEmails.filter(e => e.status !== 'deleted'),
+    "markAsRead": async (data: { id: number }) => {
+        await delay(200);
+        const item = mockEmails.find(e => e.id === data.id);
+        if (item) item.read = true;
+        return true;
+    },
+    "archiveMail": async (data: { id: number; archive?: boolean }) => {
+        await delay(200);
+        const item = mockEmails.find(e => e.id === data.id);
+        if (item) item.status = data.archive === false ? 'active' : 'archived';
+        return true;
+    },
+    "deleteMail": async (data: { id: number }) => {
+        await delay(200);
+        const item = mockEmails.find(e => e.id === data.id);
+        if (item) item.status = 'deleted';
+        return true;
+    },
+
 
     // Navigation
     "hideFrame": () => { },

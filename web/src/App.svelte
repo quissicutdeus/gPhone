@@ -9,6 +9,7 @@
   import { registeredComponents } from "./store/registry";
   import Home from "./components/Home.svelte";
   import { fetchNui } from "./utils/fetchNui";
+  import { mailStore } from "./store/mail";
 
   const components: Record<string, any> = { ...registeredComponents };
   components["home"] = Home;
@@ -25,6 +26,8 @@
       }
     } else if (action === "setTime") {
       time.set(data);
+    } else if (action === "receiveMail") {
+      mailStore.addReceivedMail(data);
     } else if (action === "callStatus") {
       // { status: 'connected' | 'idle' | 'incoming', number: '...', name: '...' }
       if (data.status === "incoming") {

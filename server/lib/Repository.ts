@@ -18,8 +18,13 @@ export abstract class Repository<T> {
 
     async findAll(where: Partial<T> = {}): Promise<T[]> {
         let query = `SELECT * FROM ${this.tableName}`;
-        const keys = Object.keys(where);
-        const values = Object.values(where);
+        const filterWhere = { ...where };
+        if (!('status' in filterWhere)) {
+            (filterWhere as any).status = 'active';
+        }
+
+        const keys = Object.keys(filterWhere);
+        const values = Object.values(filterWhere);
 
         if (keys.length > 0) {
             const conditions = keys.map(key => `${key} = ?`).join(' AND ');
@@ -38,7 +43,7 @@ export abstract class Repository<T> {
     }
 
     async delete(id: number | string): Promise<boolean> {
-        const query = `DELETE FROM ${this.tableName} WHERE id = ?`;
+        const query = `UPDATE ${this.tableName} SET status = 'deleted' WHERE id = ?`;
         return await Database.update(query, [id]);
     }
 }
