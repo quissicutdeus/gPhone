@@ -2,9 +2,12 @@
     import {
         bankBalance,
         transactions,
+        citizenid,
         fetchBalance,
         fetchTransactions,
+        fetchCitizenId,
     } from "../../store/account";
+    import { hashStringToCardNumber } from "../../utils/cardUtils";
     import Screen from "../../components/Screen.svelte";
 
     let { onback } = $props();
@@ -12,6 +15,7 @@
     $effect(() => {
         fetchBalance();
         fetchTransactions();
+        fetchCitizenId();
     });
 </script>
 
@@ -19,7 +23,8 @@
     <div class="p-4">
         <!-- Card -->
         <div
-            class="bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl p-6 mb-8 shadow-lg"
+            class="rounded-2xl p-6 mb-8 shadow-lg text-white"
+            style="background-image: linear-gradient(to bottom right, var(--color-purple-600), var(--color-blue-600));"
         >
             <div class="flex justify-between items-start mb-8">
                 <span class="text-white/80 font-medium">Total Balance</span>
@@ -44,7 +49,9 @@
                     maximumFractionDigits: 2,
                 }).format($bankBalance)}
             </div>
-            <div class="text-white/70 text-sm">**** **** **** 4242</div>
+            <div class="text-white/80 text-sm font-mono tracking-wider">
+                {hashStringToCardNumber($citizenid)}
+            </div>
         </div>
 
         <!-- Transactions -->
