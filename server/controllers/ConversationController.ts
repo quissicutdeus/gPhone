@@ -63,7 +63,16 @@ app.registerEvent('create', async (source, cbId, data, citizenid) => {
     // Resolve phone to citizenid if needed
     let targetName = null;
     if (!data.is_group && data.phone) {
-        const targetPlayer = exports.qbx_core.GetPlayerByPhone(data.phone);
+        let targetPlayer: any = null;
+        try {
+            if (exports['qbx_core']?.GetPlayerByPhone) {
+                targetPlayer = exports['qbx_core'].GetPlayerByPhone(data.phone);
+            } else if (exports['qb-core']?.GetCoreObject) {
+                targetPlayer = exports['qb-core'].GetCoreObject().Functions.GetPlayerByPhone(data.phone);
+            }
+        } catch (e) {
+            targetPlayer = null;
+        }
 
         if (targetPlayer) {
             // Online player logic

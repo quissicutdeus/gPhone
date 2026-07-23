@@ -87,7 +87,12 @@ export const SendSystemEmail = async (
         } as Mail;
 
         // Find online target player to send real-time notification
-        const players = exports['qbx_core']?.GetQBPlayers();
+        let players: any = null;
+        if (exports['qbx_core']?.GetQBPlayers) {
+            players = exports['qbx_core'].GetQBPlayers();
+        } else if (exports['qb-core']?.GetCoreObject) {
+            players = exports['qb-core'].GetCoreObject().Functions.GetQBPlayers();
+        }
         if (players) {
             for (const src in players) {
                 if (players[src]?.PlayerData?.citizenid === targetCitizenId) {

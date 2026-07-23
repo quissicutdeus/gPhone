@@ -68,13 +68,23 @@ export class ServerApp<T> {
         onNet(eventName, async (cbId: any, data: any) => {
             const src = source;
             try {
-                const player = exports.qbx_core.GetPlayer(src);
+                let player: any = null;
+                try {
+                    if (exports['qbx_core']?.GetPlayer) {
+                        player = exports['qbx_core'].GetPlayer(src);
+                    } else if (exports['qb-core']?.GetCoreObject) {
+                        player = exports['qb-core'].GetCoreObject().Functions.GetPlayer(src);
+                    }
+                } catch (e) {
+                    player = null;
+                }
+
                 if (!player) {
                     emitNet(clientEventName, src, cbId, { error: 'Player not authenticated' });
                     return;
                 }
 
-                const citizenid = player.PlayerData.citizenid;
+                const citizenid = player.PlayerData?.citizenid || player.citizenid;
                 const result = await handler(src, cbId, data, citizenid, player);
 
                 if (result !== undefined) {

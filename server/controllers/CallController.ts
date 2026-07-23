@@ -13,18 +13,37 @@ const playerCalls: Record<number, number> = {}; // Source -> CallID (Fast lookup
 
 // Helper: Get Player Phone (Depends on QBCore/QBX)
 const getPlayerPhone = (src: number): string | null => {
-    const player = exports['qbx_core'].GetPlayer(src);
-    return player?.PlayerData?.charinfo?.phone || null;
+    try {
+        let player: any = null;
+        if (exports['qbx_core']?.GetPlayer) {
+            player = exports['qbx_core'].GetPlayer(src);
+        } else if (exports['qb-core']?.GetCoreObject) {
+            player = exports['qb-core'].GetCoreObject().Functions.GetPlayer(src);
+        }
+        return player?.PlayerData?.charinfo?.phone || null;
+    } catch (e) {
+        return null;
+    }
 }
 
 // Helper: Find Player Source by Phone
 const getPlayerFromPhone = (phone: string): number | null => {
-    const players = exports['qbx_core'].GetQBPlayers(); // Returns dict of source -> player
-    // This might be heavy if many players. Optimize if needed.
-    for (const src in players) {
-        if (players[src].PlayerData.charinfo.phone === phone) {
-            return parseInt(src);
+    try {
+        let players: any = null;
+        if (exports['qbx_core']?.GetQBPlayers) {
+            players = exports['qbx_core'].GetQBPlayers();
+        } else if (exports['qb-core']?.GetCoreObject) {
+            players = exports['qb-core'].GetCoreObject().Functions.GetQBPlayers();
         }
+        if (players) {
+            for (const src in players) {
+                if (players[src]?.PlayerData?.charinfo?.phone === phone) {
+                    return parseInt(src);
+                }
+            }
+        }
+    } catch (e) {
+        return null;
     }
     return null;
 }
