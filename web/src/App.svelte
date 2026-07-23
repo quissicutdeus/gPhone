@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { debugData } from "./utils/debug";
   import { time } from "./store/time";
+  import { charge } from "./store/charge";
   import { currentApp, openApp, goHome, closePhone } from "./store/navigation";
   import { callStore } from "./store/call";
   import { isTakingPhoto } from "./store/camera";
@@ -26,6 +27,10 @@
       }
     } else if (action === "setTime") {
       time.set(data);
+    } else if (action === "setCharge") {
+      if (typeof data === "number") {
+        charge.set(data);
+      }
     } else if (action === "receiveMail") {
       mailStore.addReceivedMail(data);
     } else if (action === "callStatus") {

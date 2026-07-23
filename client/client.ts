@@ -1,5 +1,5 @@
 import './controllers';
-import { ClientApp } from './lib/ClientApp';
+import { sendChargeToNui } from './controllers/BatteryController';
 
 let isPhoneOpen = false;
 let isFreelookActive = false;
@@ -122,8 +122,9 @@ RegisterCommand('togglePhone', () => {
       AttachEntityToEntity(phoneProp, ped, GetPedBoneIndex(ped, 28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true);
       SetModelAsNoLongerNeeded(GetHashKey('prop_npc_phone_02'));
     });
-    // Send time immediately when opening
+    // Send time and battery charge immediately when opening
     sendTimeToNui();
+    sendChargeToNui();
   } else {
     const ped = PlayerPedId();
     if (phoneProp) {
@@ -227,14 +228,35 @@ on('__cfx_nui:onCameraApp', async (data: { state: boolean }, cb: Function) => {
   cb({});
 });
 
+const getClientPlayerData = () => {
+  try {
+    if (exports['qbx_core']?.GetPlayerData) {
+      return exports['qbx_core'].GetPlayerData();
+    } else if (exports['qb-core']?.GetCoreObject) {
+      return exports['qb-core'].GetCoreObject().Functions.GetPlayerData();
+    }
+  } catch (error) {
+    console.error("Error getting PlayerData from framework:", error);
+    return null;
+  }
+  return null;
+};
+
 // NUI Callback to get bank balance
 RegisterNuiCallbackType('getBankBalance');
 on('__cfx_nui:getBankBalance', (_: any, cb: Function) => {
   try {
-    const PlayerData = exports['qbx_core'].GetPlayerData();
-    cb(PlayerData.money.bank);
+    if (exports['qbx_core']?.GetMoney) {
+      const balance = exports['qbx_core'].GetMoney('bank');
+      if (typeof balance === 'number') {
+        cb(balance);
+        return;
+      }
+    }
+    const PlayerData = getClientPlayerData();
+    cb(PlayerData?.money?.bank ?? 0);
   } catch (error) {
-    console.error("Error getting bank balance from qbx_core:", error);
+    console.error("Error getting bank balance:", error);
     cb(0);
   }
 });
@@ -242,10 +264,10 @@ on('__cfx_nui:getBankBalance', (_: any, cb: Function) => {
 RegisterNuiCallbackType('getCitizenId');
 on('__cfx_nui:getCitizenId', (_: any, cb: Function) => {
   try {
-    const PlayerData = exports['qbx_core'].GetPlayerData();
-    cb(PlayerData.citizenid);
+    const PlayerData = getClientPlayerData();
+    cb(PlayerData?.citizenid ?? null);
   } catch (error) {
-    console.error("Error getting citizenid from qbx_core:", error);
+    console.error("Error getting citizenid:", error);
     cb(null);
   }
 });
