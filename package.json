@@ -14,7 +14,10 @@
     "typecheck:web": "pnpm --filter web check",
     "typecheck": "run-p typecheck:*",
     "watch": "pnpm clearbuild && node scripts/generate-manifests.js && cross-env IS_WATCH_MODE=1 node build/build-bundle.js",
-    "watch:web": "pnpm --filter web dev"
+    "watch:web": "pnpm --filter web dev",
+    "test": "pnpm --filter web test",
+    "test:unit": "pnpm --filter web test:unit",
+    "test:e2e": "pnpm --filter web test:e2e"
   },
   "author": "quissicutdeus",
   "license": "AGPL-3.0-or-later",

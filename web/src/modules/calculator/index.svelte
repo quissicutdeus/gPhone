@@ -57,24 +57,44 @@
         } else if (operator) {
             const result = calculate(firstOperand, inputValue, operator);
             display = String(result);
-            firstOperand = result;
+            if (typeof result === "number") {
+                firstOperand = result;
+            } else {
+                firstOperand = null;
+                operator = null;
+                return;
+            }
         }
 
         waitingForSecondOperand = true;
         operator = nextOperator;
     };
 
-    const calculate = (first: number, second: number, op: string) => {
-        if (op === "+") return first + second;
-        if (op === "-") return first - second;
-        if (op === "×") return first * second;
-        if (op === "÷") return first / second;
-        return second;
+    const calculate = (first: number, second: number, op: string): number | string => {
+        let result: number;
+        if (op === "+") result = first + second;
+        else if (op === "-") result = first - second;
+        else if (op === "×") result = first * second;
+        else if (op === "÷") {
+            if (second === 0) return "Error";
+            result = first / second;
+        } else {
+            result = second;
+        }
+
+        if (isNaN(result) || !isFinite(result)) return "Error";
+        // Avoid precision floating point issues like 0.1 + 0.2 = 0.30000000000000004
+        return Math.round(result * 1e10) / 1e10;
     };
 
     const handleBackspace = () => {
+        if (display === "Error") {
+            clear();
+            return;
+        }
         if (!waitingForSecondOperand && display.length > 1) {
-            display = display.slice(0, -1);
+            const next = display.slice(0, -1);
+            display = (next === "-" || next === "") ? "0" : next;
         } else {
             display = "0";
         }
