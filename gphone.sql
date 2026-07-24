@@ -104,6 +104,28 @@ CREATE TABLE IF NOT EXISTS `gphone_messages` (
     CONSTRAINT `fk_messages_citizenid` FOREIGN KEY (`citizenid`) REFERENCES `players` (`citizenid`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `gphone_photos` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `citizenid` varchar(50) NOT NULL,
+    `image` MEDIUMTEXT NOT NULL,
+    `status` ENUM(
+        'active',
+        'deleted',
+        'moderated'
+    ) NOT NULL DEFAULT 'active',
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `status` (`status`),
+    KEY `citizenid_status` (`citizenid`, `status`),
+    KEY `citizenid_status_created` (
+        `citizenid`,
+        `status`,
+        `created_at`
+    ),
+    CONSTRAINT `fk_photos_citizenid` FOREIGN KEY (`citizenid`) REFERENCES `players` (`citizenid`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `gphone_messages_attachments` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `message_id` int(11) NOT NULL,
@@ -140,28 +162,6 @@ CREATE TABLE IF NOT EXISTS `gphone_notes` (
         `updated_at`
     ),
     CONSTRAINT `fk_notes_citizenid` FOREIGN KEY (`citizenid`) REFERENCES `players` (`citizenid`) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `gphone_photos` (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
-    `citizenid` varchar(50) NOT NULL,
-    `image` MEDIUMTEXT NOT NULL,
-    `status` ENUM(
-        'active',
-        'deleted',
-        'moderated'
-    ) NOT NULL DEFAULT 'active',
-    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    KEY `status` (`status`),
-    KEY `citizenid_status` (`citizenid`, `status`),
-    KEY `citizenid_status_created` (
-        `citizenid`,
-        `status`,
-        `created_at`
-    ),
-    CONSTRAINT `fk_photos_citizenid` FOREIGN KEY (`citizenid`) REFERENCES `players` (`citizenid`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `gphone_mail` (

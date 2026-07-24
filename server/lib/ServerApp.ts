@@ -1,5 +1,6 @@
 import { Repository } from './Repository';
 import { AuditLogger } from './AuditLogger';
+import { FrameworkBridge, FrameworkPlayer } from './FrameworkBridge';
 
 export interface ServerAppOptions {
     disableGet?: boolean;
@@ -7,6 +8,7 @@ export interface ServerAppOptions {
     disableUpdate?: boolean;
     disableDelete?: boolean;
     tableName?: string;
+    onAfterDelete?: (citizenid: string, targetId: number) => Promise<void>;
 }
 
 export class ServerApp<T> {
@@ -55,37 +57,30 @@ export class ServerApp<T> {
                         targetId: Number(data.id),
                         targetTable: this.options.tableName || `gphone_${this.appName}`
                     });
+                    if (this.options.onAfterDelete) {
+                        await this.options.onAfterDelete(citizenid, Number(data.id));
+                    }
                 }
                 return success;
             });
         }
     }
 
-    public registerEvent(action: string, handler: (source: number, cbId: any, data: any, citizenid: string, player: any) => Promise<any>) {
+    public registerEvent(action: string, handler: (source: number, cbId: any, data: any, citizenid: string, player: FrameworkPlayer) => Promise<any>) {
         const eventName = `gphone:server:${this.appName}:${action}`;
         const clientEventName = `gphone:client:${this.appName}:${action === 'get' ? 'receive' : action === 'create' ? 'created' : action === 'update' ? 'updated' : action === 'delete' ? 'deleted' : action}`;
 
         onNet(eventName, async (cbId: any, data: any) => {
             const src = source;
             try {
-                let player: any = null;
-                try {
-                    if (exports['qbx_core']?.GetPlayer) {
-                        player = exports['qbx_core'].GetPlayer(src);
-                    } else if (exports['qb-core']?.GetCoreObject) {
-                        player = exports['qb-core'].GetCoreObject().Functions.GetPlayer(src);
-                    }
-                } catch (e) {
-                    player = null;
-                }
+                const player = FrameworkBridge.getPlayer(src);
 
                 if (!player) {
                     emitNet(clientEventName, src, cbId, { error: 'Player not authenticated' });
                     return;
                 }
 
-                const citizenid = player.PlayerData?.citizenid || player.citizenid;
-                const result = await handler(src, cbId, data, citizenid, player);
+                const result = await handler(src, cbId, data, player.citizenid, player);
 
                 if (result !== undefined) {
                     emitNet(clientEventName, src, cbId, result);
@@ -97,3 +92,4 @@ export class ServerApp<T> {
         });
     }
 }
+

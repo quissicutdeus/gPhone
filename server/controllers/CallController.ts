@@ -1,3 +1,5 @@
+import { FrameworkBridge } from '../lib/FrameworkBridge';
+
 // Dictionary to track active calls: CallID -> { caller: source, target: source }
 interface ActiveCall {
     id: number;
@@ -11,53 +13,17 @@ interface ActiveCall {
 const activeCalls: Record<number, ActiveCall> = {};
 const playerCalls: Record<number, number> = {}; // Source -> CallID (Fast lookup)
 
-// Helper: Get Player Phone (Depends on QBCore/QBX)
-const getPlayerPhone = (src: number): string | null => {
-    try {
-        let player: any = null;
-        if (exports['qbx_core']?.GetPlayer) {
-            player = exports['qbx_core'].GetPlayer(src);
-        } else if (exports['qb-core']?.GetCoreObject) {
-            player = exports['qb-core'].GetCoreObject().Functions.GetPlayer(src);
-        }
-        return player?.PlayerData?.charinfo?.phone || null;
-    } catch (e) {
-        return null;
-    }
-}
-
-// Helper: Find Player Source by Phone
-const getPlayerFromPhone = (phone: string): number | null => {
-    try {
-        let players: any = null;
-        if (exports['qbx_core']?.GetQBPlayers) {
-            players = exports['qbx_core'].GetQBPlayers();
-        } else if (exports['qb-core']?.GetCoreObject) {
-            players = exports['qb-core'].GetCoreObject().Functions.GetQBPlayers();
-        }
-        if (players) {
-            for (const src in players) {
-                if (players[src]?.PlayerData?.charinfo?.phone === phone) {
-                    return parseInt(src);
-                }
-            }
-        }
-    } catch (e) {
-        return null;
-    }
-    return null;
-}
-
 const generateCallId = () => Math.floor(Math.random() * 900000) + 100000;
 
 onNet('gphone:server:startCall', (targetPhone: string) => {
     const src = source;
-    const callerPhone = getPlayerPhone(src);
+    const callerPhone = FrameworkBridge.getPlayerPhone(src);
 
     if (!callerPhone) return;
 
-    // Look up target
-    const targetSrc = getPlayerFromPhone(targetPhone);
+    // Look up target via FrameworkBridge
+    const targetPlayer = FrameworkBridge.getPlayerByPhone(targetPhone);
+    const targetSrc = targetPlayer?.source || null;
 
     if (!targetSrc) {
         emitNet('gphone:client:notify', src, { type: 'error', text: 'Number unavailable' });
@@ -93,9 +59,8 @@ onNet('gphone:server:startCall', (targetPhone: string) => {
     playerCalls[targetSrc] = callId;
 
     // Notify receiving player
-    // We send 'callId' so they can reference it if needed (though mostly internal)
     emitNet('gphone:client:receiveCall', targetSrc, {
-        from: callerPhone, // Number to display
+        from: callerPhone,
         callId: callId
     });
 });
@@ -106,13 +71,6 @@ onNet('gphone:server:answerCall', () => {
     const call = activeCalls[callId];
 
     if (!call || call.target !== src) return;
-
-    // Set PMA Voice Channel for both
-    // In PMA-Voice, we often use `setPlayerCall(source, channel)` or similar if using native exports.
-    // If using straight Mumble channels, `addPlayerToCall`.
-
-    // We will emit back to client so CLIENT can trigger pma-voice export 
-    // (Common pattern: Clients manage their own voice connection via exports)
 
     emitNet('gphone:client:callAccepted', call.caller, { callId });
     emitNet('gphone:client:callAccepted', call.target, { callId });

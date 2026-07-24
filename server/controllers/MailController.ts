@@ -2,6 +2,7 @@ import { MailRepository } from '../repositories/MailRepository';
 import { ServerApp } from '../lib/ServerApp';
 import { Mail } from '@shared/types';
 import { AuditLogger } from '../lib/AuditLogger';
+import { FrameworkBridge } from '../lib/FrameworkBridge';
 
 const mailRepo = new MailRepository();
 const app = new ServerApp<Mail>('mail', mailRepo, {
@@ -87,18 +88,11 @@ export const SendSystemEmail = async (
         } as Mail;
 
         // Find online target player to send real-time notification
-        let players: any = null;
-        if (exports['qbx_core']?.GetQBPlayers) {
-            players = exports['qbx_core'].GetQBPlayers();
-        } else if (exports['qb-core']?.GetCoreObject) {
-            players = exports['qb-core'].GetCoreObject().Functions.GetQBPlayers();
-        }
-        if (players) {
-            for (const src in players) {
-                if (players[src]?.PlayerData?.citizenid === targetCitizenId) {
-                    emitNet('gphone:client:mail:receive', parseInt(src), newMail);
-                    break;
-                }
+        const players = FrameworkBridge.getAllPlayers();
+        for (const src in players) {
+            if (players[src]?.PlayerData?.citizenid === targetCitizenId) {
+                emitNet('gphone:client:mail:receive', parseInt(src, 10), newMail);
+                break;
             }
         }
 
