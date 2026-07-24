@@ -5,6 +5,16 @@
     import type { Note } from "@shared/types";
     import { marked } from "marked";
     import { fade } from "svelte/transition";
+    import AddIcon from "../../components/icons/AddIcon.svelte";
+    import EditIcon from "../../components/icons/EditIcon.svelte";
+    import ListBulletIcon from "../../components/icons/ListBulletIcon.svelte";
+    import CheckCircleIcon from "../../components/icons/CheckCircleIcon.svelte";
+    import DocumentIcon from "../../components/icons/DocumentIcon.svelte";
+    import ConfirmDialog from "../../components/ConfirmDialog.svelte";
+    import EmptyState from "../../components/EmptyState.svelte";
+    import SearchBar from "../../components/SearchBar.svelte";
+    import Button from "../../components/Button.svelte";
+    import ListItem from "../../components/ListItem.svelte";
 
     let { onback } = $props();
 
@@ -181,20 +191,7 @@
             onclick={() => (isAdding = true)}
             aria-label="Add note"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                />
-            </svg>
+            <AddIcon />
         </button>
     {:else if selectedNote && !isEditing}
         <button
@@ -202,20 +199,7 @@
             onclick={startEditing}
             aria-label="Edit note"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                />
-            </svg>
+            <EditIcon />
         </button>
     {/if}
 {/snippet}
@@ -260,36 +244,14 @@
                             onclick={() => insertMarkdown("- ", "", "item")}
                             title="Insert List Item"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
+                            <ListBulletIcon />
                         </button>
                         <button
                             class="p-2 hover:bg-gray-700 rounded text-gray-300"
                             onclick={() => insertMarkdown("- [ ] ", "", "task")}
                             title="Insert Task Item"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
+                            <CheckCircleIcon />
                         </button>
                         <div class="relative">
                             <button
@@ -326,18 +288,21 @@
                     </div>
                 </div>
                 <div class="flex space-x-2">
-                    <button
-                        class="flex-1 p-2 bg-gray-600 rounded hover:bg-gray-500 disabled:opacity-50"
+                    <Button
+                        class="flex-1"
+                        variant="secondary"
                         onclick={() => (isAdding = false)}
-                        disabled={isLoading}>Cancel</button
+                        disabled={isLoading}
                     >
-                    <button
-                        class="flex-1 p-2 bg-yellow-600 rounded hover:bg-yellow-500 text-black font-medium disabled:opacity-50"
+                        Cancel
+                    </Button>
+                    <Button
+                        class="flex-1"
                         onclick={addNote}
                         disabled={isLoading}
                     >
                         {isLoading ? "Saving..." : "Save"}
-                    </button>
+                    </Button>
                 </div>
             </div>
         {:else}
@@ -346,55 +311,41 @@
             >
                 {#if !isAdding && $notes.length > 0}
                     <div class="mb-2">
-                        <input
-                            class="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-yellow-500 placeholder-gray-500 text-sm"
-                            placeholder="Search notes..."
+                        <SearchBar
                             bind:value={searchQuery}
+                            placeholder="Search notes..."
+                            focusRingClass="focus:ring-yellow-500"
                         />
                     </div>
                 {/if}
 
                 {#each filteredNotes as note}
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
-                    <div
-                        class="p-4 bg-gray-800 rounded-lg shadow cursor-pointer hover:bg-gray-700 transition-colors"
+                    <ListItem
+                        class="p-4 bg-gray-800 rounded-lg shadow mb-2"
                         onclick={() => (selectedNote = note)}
-                        role="button"
-                        tabindex="0"
                     >
-                        <h3 class="font-bold text-lg text-yellow-500 truncate">
-                            {note.title || "Untitled"}
-                        </h3>
-                        <p class="text-sm text-gray-400 line-clamp-2 mt-1">
-                            {note.content}
-                        </p>
-                        <span class="text-xs text-gray-600 mt-2 block">
-                            {new Date(note.updated_at).toLocaleDateString()}
-                        </span>
-                    </div>
+                        <div class="flex flex-col w-full">
+                            <h3 class="font-bold text-lg text-yellow-500 truncate">
+                                {note.title || "Untitled"}
+                            </h3>
+                            <p class="text-sm text-gray-400 line-clamp-2 mt-1">
+                                {note.content}
+                            </p>
+                            <span class="text-xs text-gray-600 mt-2 block">
+                                {new Date(note.updated_at).toLocaleDateString()}
+                            </span>
+                        </div>
+                    </ListItem>
                 {/each}
                 {#if filteredNotes.length === 0}
-                    <div
-                        class="flex flex-col items-center justify-center flex-1 text-gray-500"
+                    <EmptyState
+                        title={searchQuery ? "No matching notes" : "No notes yet"}
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-12 w-12 mb-2 opacity-50"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                            />
-                        </svg>
-                        <p>
-                            {searchQuery ? "No matching notes" : "No notes yet"}
-                        </p>
-                    </div>
+                        {#snippet icon()}
+                            <DocumentIcon class="h-12 w-12" />
+                        {/snippet}
+                    </EmptyState>
                 {/if}
             </div>
         {/if}
@@ -438,18 +389,7 @@
                                 onclick={() => insertMarkdown("- ", "", "item")}
                                 title="Insert List Item"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fill-rule="evenodd"
-                                        d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
+                                <ListBulletIcon />
                             </button>
                             <button
                                 class="p-2 hover:bg-gray-600 rounded text-gray-200"
@@ -457,18 +397,7 @@
                                     insertMarkdown("- [ ] ", "", "task")}
                                 title="Insert Task Item"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fill-rule="evenodd"
-                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
+                                <CheckCircleIcon />
                             </button>
                             <div class="relative">
                                 <button
@@ -506,20 +435,21 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <button
-                            class="flex-1 p-3 bg-red-900/40 text-red-400 rounded-lg hover:bg-red-900/60 transition-colors disabled:opacity-50"
+                        <Button
+                            class="flex-1"
+                            variant="danger"
                             onclick={() => (showDeleteConfirm = true)}
                             disabled={isLoading}
                         >
                             Delete
-                        </button>
-                        <button
-                            class="flex-1 p-3 bg-yellow-600 text-black font-bold rounded-lg hover:bg-yellow-500 transition-colors disabled:opacity-50"
+                        </Button>
+                        <Button
+                            class="flex-1"
                             onclick={updateNote}
                             disabled={isLoading}
                         >
                             {isLoading ? "Saving..." : "Save"}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             {:else}
@@ -532,36 +462,14 @@
             {/if}
 
             {#if showDeleteConfirm}
-                <div
-                    class="absolute inset-0 bg-black/80 flex items-center justify-center p-6 z-50 backdrop-blur-sm"
-                    transition:fade
-                >
-                    <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full">
-                        <h3 class="text-xl font-bold text-white mb-2">
-                            Delete Note?
-                        </h3>
-                        <p class="text-gray-400 mb-6">
-                            Are you sure you want to delete "{selectedNote.title ||
-                                "Untitled"}"? This action cannot be undone.
-                        </p>
-                        <div class="flex gap-3">
-                            <button
-                                class="flex-1 p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-                                onclick={() => (showDeleteConfirm = false)}
-                                disabled={isLoading}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                class="flex-1 p-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-500 transition-colors disabled:opacity-50"
-                                onclick={deleteNote}
-                                disabled={isLoading}
-                            >
-                                {isLoading ? "Deleting..." : "Delete"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <ConfirmDialog
+                    title="Delete Note?"
+                    message={`Are you sure you want to delete "${selectedNote.title || "Untitled"}"? This action cannot be undone.`}
+                    confirmText="Delete"
+                    {isLoading}
+                    oncancel={() => (showDeleteConfirm = false)}
+                    onconfirm={deleteNote}
+                />
             {/if}
         </div>
     {/if}

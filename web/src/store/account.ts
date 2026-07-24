@@ -1,8 +1,15 @@
 import { writable } from "svelte/store";
 import { fetchNui } from "../utils/fetchNui";
 
+export interface Transaction {
+    amount: number;
+    time: number;
+    message?: string;
+    title?: string;
+}
+
 export const bankBalance = writable<number>(0);
-export const transactions = writable<any[]>([]);
+export const transactions = writable<Transaction[]>([]);
 export const citizenid = writable<string>("");
 
 export const fetchCitizenId = async () => {

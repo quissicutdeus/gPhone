@@ -2,6 +2,8 @@
     import { isTakingPhoto } from "../../store/camera";
     import { fetchNui } from "../../utils/fetchNui";
     import { photos } from "../../store/photos";
+    import CloseIcon from "../../components/icons/CloseIcon.svelte";
+    import ChevronLeftIcon from "../../components/icons/ChevronLeftIcon.svelte";
 
     let { onback } = $props<{ onback: () => void }>();
 
@@ -121,20 +123,7 @@
                 onclick={closePhoto}
                 aria-label="Close photo"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+                <CloseIcon />
             </button>
         </div>
     {/if}
@@ -146,19 +135,7 @@
             onclick={onback}
             aria-label="Go back"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
+            <ChevronLeftIcon />
         </button>
     </div>
 

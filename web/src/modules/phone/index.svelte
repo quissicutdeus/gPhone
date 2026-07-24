@@ -6,6 +6,12 @@
         contacts as contactsStore,
         favoriteContacts,
     } from "../../store/contacts";
+    import PhoneIcon from "../../components/icons/PhoneIcon.svelte";
+    import BackspaceIcon from "../../components/icons/BackspaceIcon.svelte";
+    import MicrophoneIcon from "../../components/icons/MicrophoneIcon.svelte";
+    import KeypadIcon from "../../components/icons/KeypadIcon.svelte";
+    import SpeakerIcon from "../../components/icons/SpeakerIcon.svelte";
+    import Avatar from "../../components/Avatar.svelte";
 
     let { onback } = $props();
 
@@ -67,12 +73,12 @@
                                             `${fav.firstname} ${fav.lastname || ""}`,
                                         )}
                                 >
-                                    <div
-                                        class="w-12 h-12 rounded-full bg-yellow-600 flex items-center justify-center text-lg font-bold shadow-lg"
-                                    >
-                                        {(fav.firstname[0] || "") +
-                                            (fav.lastname?.[0] || "")}
-                                    </div>
+                                    <Avatar
+                                        initials={(fav.firstname[0] || "") + (fav.lastname?.[0] || "")}
+                                        size="w-12 h-12"
+                                        textClass="text-lg"
+                                        bgClass="bg-yellow-600 shadow-lg"
+                                    />
                                     <span
                                         class="text-xs text-gray-300 truncate w-full text-center"
                                         >{fav.firstname}</span
@@ -124,20 +130,7 @@
                         aria-label="Call"
                         onclick={() => startCall(enteredNumber)}
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-8 w-8 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                            />
-                        </svg>
+                        <PhoneIcon class="h-8 w-8 text-white" />
                     </button>
 
                     <!-- Backspace -->
@@ -148,20 +141,7 @@
                                 onclick={handleBackspace}
                                 aria-label="Backspace"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-8 w-8"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z"
-                                    />
-                                </svg>
+                                <BackspaceIcon class="h-8 w-8" />
                             </button>
                         {/if}
                     </div>
@@ -174,13 +154,12 @@
             class="flex-1 flex flex-col items-center pt-20 pb-12 bg-gradient-to-b from-gray-800 to-gray-900 animate-in fade-in duration-300"
         >
             <!-- Avatar/Icon -->
-            <div
-                class="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center mb-8 shadow-2xl"
-            >
-                <span class="text-4xl font-bold text-gray-400">
-                    {$callStore.name?.[0] || "#"}
-                </span>
-            </div>
+            <Avatar
+                initials={$callStore.name?.[0] || "#"}
+                size="w-32 h-32"
+                textClass="text-4xl text-gray-400"
+                bgClass="bg-gray-700 shadow-2xl mb-8"
+            />
 
             <h2 class="text-3xl font-semibold mb-2 text-center px-4">
                 {$callStore.name || $callStore.number}
@@ -203,20 +182,7 @@
                     aria-label="Mute"
                 >
                     <div class="p-4 rounded-full bg-gray-800">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-                            />
-                        </svg>
+                        <MicrophoneIcon />
                     </div>
                     <span class="text-xs">Mute</span>
                 </button>
@@ -227,20 +193,7 @@
                     aria-label="Keypad"
                 >
                     <div class="p-4 rounded-full bg-gray-800">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                            />
-                        </svg>
+                        <KeypadIcon />
                     </div>
                     <span class="text-xs">Keypad</span>
                 </button>
@@ -258,20 +211,7 @@
                             ? 'bg-white text-gray-900'
                             : ''}"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                            />
-                        </svg>
+                        <SpeakerIcon />
                     </div>
                     <span class="text-xs">Speaker</span>
                 </button>
@@ -285,20 +225,7 @@
                         onclick={() => callStore.answerCall()}
                         aria-label="Answer Call"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-8 w-8 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                            />
-                        </svg>
+                        <PhoneIcon class="h-8 w-8 text-white" />
                     </button>
                 {/if}
 
@@ -307,20 +234,7 @@
                     onclick={() => callStore.endCall()}
                     aria-label="End Call"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-8 w-8 text-white transform rotate-135"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                        />
-                    </svg>
+                    <PhoneIcon class="h-8 w-8 text-white transform rotate-135" />
                 </button>
             </div>
         </div>

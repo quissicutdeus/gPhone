@@ -3,6 +3,8 @@
     import { formattedTime } from "../store/time";
     import { goHome } from "../store/navigation";
     import { displayCharge, isDead, roundedCharge } from "../store/charge";
+    import LightningWarningIcon from "./icons/LightningWarningIcon.svelte";
+    import SignalIcon from "./icons/SignalIcon.svelte";
 
     let { transparent = false, onClose, children } = $props();
 </script>
@@ -56,20 +58,7 @@
                         <div
                             class="absolute inset-0 flex items-center justify-center"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-7 w-7 text-red-400 drop-shadow"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                                />
-                            </svg>
+                            <LightningWarningIcon />
                         </div>
                     </div>
                     <div class="flex flex-col items-center gap-1.5 text-center">
@@ -92,16 +81,7 @@
             >
                 <span>{$formattedTime}</span>
                 <div class="flex items-center gap-2">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"
-                        />
-                    </svg>
+                    <SignalIcon />
 
                     <!-- Battery Status Indicator -->
                     <div class="flex items-center gap-1.5">

@@ -10,6 +10,19 @@
     import { photos } from "../../store/photos";
     import { fade, fly } from "svelte/transition";
     import type { Contact, Photo } from "@shared/types";
+    import { formatTime } from "../../utils/formatters";
+    import PencilSquareIcon from "../../components/icons/PencilSquareIcon.svelte";
+    import PaperclipIcon from "../../components/icons/PaperclipIcon.svelte";
+    import CloseIcon from "../../components/icons/CloseIcon.svelte";
+    import SendIcon from "../../components/icons/SendIcon.svelte";
+    import PhotoIcon from "../../components/icons/PhotoIcon.svelte";
+    import LocationIcon from "../../components/icons/LocationIcon.svelte";
+    import ChevronRightIcon from "../../components/icons/ChevronRightIcon.svelte";
+    import MessageIcon from "../../components/icons/MessageIcon.svelte";
+    import EmptyState from "../../components/EmptyState.svelte";
+    import SearchBar from "../../components/SearchBar.svelte";
+    import ListItem from "../../components/ListItem.svelte";
+    import Avatar from "../../components/Avatar.svelte";
 
     let { onback, initialContact } = $props<{
         onback?: () => void;
@@ -156,15 +169,6 @@
         return "Messages";
     };
 
-    const formatTime = (isoString?: string | number | Date) => {
-        if (!isoString) return "";
-        const date =
-            isoString instanceof Date ? isoString : new Date(isoString);
-        return date.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
     const focus = (el: HTMLInputElement) => el.focus();
 </script>
 
@@ -175,20 +179,7 @@
             onclick={startNewMessage}
             aria-label="New Message"
         >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-                />
-            </svg>
+            <PencilSquareIcon />
         </button>
     {/if}
 {/snippet}
@@ -198,23 +189,19 @@
         <!-- New Message User Selection -->
         <div class="flex flex-col h-full">
             <div class="p-2 border-b border-gray-800">
-                <input
-                    class="w-full bg-gray-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="To: Name or Number"
+                <SearchBar
                     bind:value={recipientQuery}
-                    use:focus
+                    placeholder="To: Name or Number"
                 />
             </div>
             <div class="flex-1 overflow-y-auto no-scrollbar">
                 {#each filteredContacts as contact}
-                    <button
-                        class="w-full flex items-center p-4 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 text-left"
+                    <ListItem
+                        class="border-b border-gray-800/50"
                         onclick={() => handleSelectContactRaw(contact)}
                     >
-                        <div
-                            class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold mr-3"
-                        >
-                            {contact.firstname[0]}
+                        <div class="mr-3">
+                            <Avatar initials={contact.firstname[0]} />
                         </div>
                         <div>
                             <div class="font-medium">
@@ -225,7 +212,7 @@
                                 {contact.phone}
                             </div>
                         </div>
-                    </button>
+                    </ListItem>
                 {/each}
             </div>
         </div>
@@ -273,8 +260,8 @@
                     </div>
                 {/each}
                 {#if messages.length === 0}
-                    <div class="text-center text-gray-500 mt-10 text-sm">
-                        No messages yet
+                    <div class="mt-10">
+                        <EmptyState title="No messages yet" />
                     </div>
                 {/if}
             </div>
@@ -289,20 +276,7 @@
                         onclick={() => (showAttachMenu = !showAttachMenu)}
                         aria-label="Attachments"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 4v16m8-8H4"
-                            />
-                        </svg>
+                        <PaperclipIcon />
                     </button>
 
                     <div class="flex-1 relative">
@@ -330,18 +304,7 @@
                                                     ))}
                                             aria-label="Remove attachment"
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                class="h-3 w-3"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fill-rule="evenodd"
-                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                    clip-rule="evenodd"
-                                                />
-                                            </svg>
+                                            <CloseIcon class="h-3 w-3" />
                                         </button>
                                     </div>
                                 {/each}
@@ -368,16 +331,7 @@
                             selectedAttachments.length === 0}
                         aria-label="Send"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5 text-white rotate-90"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                        >
-                            <path
-                                d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"
-                            />
-                        </svg>
+                        <SendIcon />
                     </button>
                 </div>
 
@@ -393,18 +347,7 @@
                             <div
                                 class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-1"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fill-rule="evenodd"
-                                        d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
+                                <PhotoIcon class="h-5 w-5" />
                             </div>
                             <span class="text-xs">Photo</span>
                         </button>
@@ -414,18 +357,7 @@
                             <div
                                 class="w-8 h-8 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center mb-1"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fill-rule="evenodd"
-                                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
+                                <LocationIcon class="h-5 w-5" />
                             </div>
                             <span class="text-xs">Location</span>
                         </button>
@@ -447,18 +379,7 @@
                             onclick={() => (showPhotoPicker = false)}
                             aria-label="Close photo picker"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
+                            <CloseIcon class="h-5 w-5" />
                         </button>
                     </div>
                     <div
@@ -500,19 +421,17 @@
         <!-- Conversation List -->
         <div class="divide-y divide-gray-800">
             {#each conversations as conv}
-                <button
-                    class="w-full flex items-start p-4 hover:bg-gray-800/50 transition-colors text-left group"
+                <ListItem
+                    class="items-start"
                     onclick={() => handleSelectConversation(conv.id)}
                 >
-                    <div class="relative">
-                        <div
-                            class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold
-                            bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg"
-                        >
-                            {conv.targetName
-                                ? conv.targetName[0]
-                                : conv.target[0] || "?"}
-                        </div>
+                    <div class="relative mr-4 shrink-0">
+                        <Avatar
+                            initials={conv.targetName ? conv.targetName[0] : conv.target[0] || "?"}
+                            size="w-12 h-12"
+                            textClass="text-lg"
+                            bgClass="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg"
+                        />
                         {#if conv.unreadCount > 0}
                             <div
                                 class="absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full bg-blue-500 text-[10px] font-bold flex items-center justify-center px-1 border-2 border-gray-900"
@@ -522,7 +441,7 @@
                         {/if}
                     </div>
 
-                    <div class="ml-4 flex-1 min-w-0">
+                    <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-baseline mb-1">
                             <span class="font-semibold text-[15px] truncate">
                                 {conv.targetName || conv.target}
@@ -537,21 +456,10 @@
                             <p class="text-sm text-gray-400 truncate flex-1">
                                 {conv.lastMessage || "No messages"}
                             </p>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity ml-2"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
+                            <ChevronRightIcon class="h-4 w-4 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity ml-2" />
                         </div>
                     </div>
-                </button>
+                </ListItem>
             {/each}
         </div>
     {/if}
