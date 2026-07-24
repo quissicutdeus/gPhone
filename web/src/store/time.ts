@@ -1,12 +1,34 @@
 import { writable, derived } from "svelte/store";
+import { isBrowser } from "../utils/isBrowser";
 
 interface TimeState {
     hours: number;
     minutes: number;
 }
 
-export const time = writable<TimeState>({ hours: 0, minutes: 0 });
+const getRealTime = (): TimeState => {
+    const now = new Date();
+    return {
+        hours: now.getHours(),
+        minutes: now.getMinutes(),
+    };
+};
+
+export const time = writable<TimeState>(getRealTime());
 export const is24Hour = writable<boolean>(false);
+
+// Live update time in browser dev mode (outside FiveM NUI)
+if (isBrowser()) {
+    setInterval(() => {
+        const real = getRealTime();
+        time.update((current) => {
+            if (current.hours !== real.hours || current.minutes !== real.minutes) {
+                return real;
+            }
+            return current;
+        });
+    }, 1000);
+}
 
 export const formattedTime = derived(
     [time, is24Hour],

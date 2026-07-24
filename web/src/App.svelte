@@ -68,6 +68,7 @@
     window.addEventListener("keydown", handleKeydown);
 
     // Mock data for browser dev
+    const now = new Date();
     debugData([
       {
         action: "setVisible",
@@ -76,8 +77,8 @@
       {
         action: "setTime",
         data: {
-          hours: 16,
-          minutes: 20,
+          hours: now.getHours(),
+          minutes: now.getMinutes(),
         },
       },
     ]);
