@@ -1,10 +1,11 @@
 fx_version 'cerulean'
 game 'gta5'
 
-author 'mbiddle'
+author 'quissicutdeus'
 version '1.0.0'
-description 'A modern phone for FiveM'
-repository 'https://github.com/mbiddle/gphone'
+license 'AGPL-3.0-or-later'
+description 'A modern Phone for FiveM built in TypeScript'
+repository 'https://github.com/quissicutdeus/gphone'
 
 lua54 'yes'
 

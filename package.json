@@ -16,8 +16,8 @@
     "watch": "pnpm clearbuild && node scripts/generate-manifests.js && cross-env IS_WATCH_MODE=1 node build/build-bundle.js",
     "watch:web": "pnpm --filter web dev"
   },
-  "author": "mbiddle",
-  "license": "MIT",
+  "author": "quissicutdeus",
+  "license": "AGPL-3.0-or-later",
   "devDependencies": {
     "@citizenfx/client": "2.0.32698-1",
     "@citizenfx/server": "2.0.32561-1",
