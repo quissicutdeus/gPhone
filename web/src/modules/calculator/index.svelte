@@ -71,6 +71,14 @@
         return second;
     };
 
+    const handleBackspace = () => {
+        if (!waitingForSecondOperand && display.length > 1) {
+            display = display.slice(0, -1);
+        } else {
+            display = "0";
+        }
+    };
+
     const handleInput = (value: string) => {
         if (/[0-9]/.test(value)) {
             inputDigit(value);
@@ -82,6 +90,8 @@
             toggleSign();
         } else if (value === "%") {
             inputPercent();
+        } else if (value === "⌫" || value === "Backspace") {
+            handleBackspace();
         } else if (["+", "-", "×", "÷"].includes(value)) {
             handleOperator(value);
         } else if (value === "=") {
@@ -128,11 +138,7 @@
         } else if (key === "/") {
             handleOperator("÷");
         } else if (key === "Backspace") {
-            if (!waitingForSecondOperand && display.length > 1) {
-                display = display.slice(0, -1);
-            } else {
-                display = "0";
-            }
+            handleBackspace();
         }
     };
 </script>
@@ -150,18 +156,34 @@
 
         <!-- Keypad -->
         <div class="grid grid-cols-4 gap-3">
-            {#each ["C", "±", "%", "÷", "7", "8", "9", "×", "4", "5", "6", "-", "1", "2", "3", "+", "0", ".", "="] as btn}
+            {#each ["C", "±", "%", "÷", "7", "8", "9", "×", "4", "5", "6", "-", "1", "2", "3", "+", "0", ".", "⌫", "="] as btn}
                 <button
                     class="aspect-square rounded-full text-2xl font-medium transition-all active:scale-95 flex items-center justify-center
-          {['÷', '×', '-', '+', '='].includes(btn)
+          {btn === '='
                         ? 'bg-orange-500 hover:bg-orange-400'
-                        : ['C', '±', '%'].includes(btn)
+                        : ['C', '±', '%', '÷', '×', '-', '+'].includes(btn)
                           ? 'bg-gray-600 hover:bg-gray-500'
-                          : 'bg-gray-800 hover:bg-gray-700'}
-          {btn === '0' ? 'col-span-2 aspect-auto rounded-full' : ''}"
+                          : 'bg-gray-800 hover:bg-gray-700'}"
                     onclick={() => handleInput(btn)}
                 >
-                    {btn}
+                    {#if btn === "⌫"}
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-6 w-6 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414-6.414a2 2 0 011.414-.586H19a2 2 0 012 2v10a2 2 0 01-2 2h-9.172a2 2 0 01-1.414-.586L3 12z"
+                            />
+                        </svg>
+                    {:else}
+                        {btn}
+                    {/if}
                 </button>
             {/each}
         </div>

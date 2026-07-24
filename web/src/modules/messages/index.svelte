@@ -186,7 +186,7 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M11 5H6a2 2 0 00-2 2v11l5-5h9a2 2 0 002-2v-6a2 2 0 00-2-2h-5m-4 8l5-5h5a2 2 0 012 2v6a2 2 0 01-2 2H6m-4 8l5-5"
+                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
                 />
             </svg>
         </button>
@@ -244,7 +244,7 @@
                             : 'items-start'}"
                     >
                         <div
-                            class="max-w-[75%] rounded-2xl px-4 py-2.5 shadow-sm relative {msg.sender ===
+                            class="max-w-[80%] rounded-2xl px-4 py-2.5 shadow-sm {msg.sender ===
                             'me'
                                 ? 'bg-blue-600 text-white rounded-tr-sm'
                                 : 'bg-gray-800 text-gray-100 rounded-tl-sm'}"
@@ -261,12 +261,12 @@
                                 </div>
                             {/if}
                             <p
-                                class="text-sm leading-relaxed whitespace-pre-wrap"
+                                class="text-sm leading-relaxed whitespace-pre-wrap inline"
                             >
                                 {msg.message}
                             </p>
                             <span
-                                class="text-[10px] opacity-70 absolute bottom-1 right-2"
+                                class="text-[10px] opacity-70 inline-block ml-2 whitespace-nowrap align-bottom select-none"
                                 >{formatTime(msg.created_at)}</span
                             >
                         </div>
