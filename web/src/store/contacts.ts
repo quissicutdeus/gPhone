@@ -45,9 +45,9 @@ function createContactsStore() {
                 console.error("Failed to delete contact:", e);
             }
         },
-        share: async (contact: Contact) => {
+        share: async (payload: Partial<Contact> & { name?: string; phone: string }) => {
             try {
-                await fetchNui("shareContact", contact);
+                await fetchNui("shareContact", payload);
             } catch (e) {
                 console.error("Failed to share contact:", e);
             }

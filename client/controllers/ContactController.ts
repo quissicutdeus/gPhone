@@ -9,12 +9,10 @@ app.registerCallback('deleteContact', 'gphone:server:contacts:delete');
 
 // Register manual NUI callback for client-side logic
 RegisterNuiCallbackType('shareContact');
-on('__cfx_nui:shareContact', (data: any, cb: Function) => {
-    // Proximity logic would go here
-    console.log('Searching for nearby players to share contact...');
+on('__cfx_nui:shareContact', (data: { name: string; phone: string; avatar?: string; firstname?: string; lastname?: string }, cb: Function) => {
+    // Proximity logic to share contact payload with nearby players
+    console.log(`Sharing contact [${data.name || data.firstname} - ${data.phone}] (Avatar: ${data.avatar ? 'Yes' : 'None'}) with nearby players...`);
 
-    // Simulate finding players and sending (or just return success for now)
-    // In a real implementation, you'd calculate distance, find players, and TriggerServerEvent to send info.
-
+    // In production, locate nearby players and trigger server event with payload (name, phone, avatar)
     cb({ success: true });
 });

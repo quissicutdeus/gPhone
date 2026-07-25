@@ -59,17 +59,31 @@ export const mockRegistry: Record<string, MockHandler> = {
         return mockMessages[conversation_id] || [];
     },
     "sendMessage": async (payload: any) => {
-        await delay(300);
-        return {
-            id: Math.random(),
-            conversation_id: payload.conversation_id,
+        await delay(200);
+        const convId = payload.conversation_id;
+        const msg: Message = {
+            id: Math.floor(Math.random() * 1000000),
+            conversation_id: convId,
             citizenid: "my-id",
             status: "active",
             message: payload.message,
             attachments: (payload.attachments || []).map((a: any, i: number) => ({ ...a, id: i })),
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-        } as Message;
+        };
+
+        if (!mockMessages[convId]) {
+            mockMessages[convId] = [];
+        }
+        mockMessages[convId].push(msg);
+
+        const conv = mockConversations.find((c) => c.id === convId);
+        if (conv) {
+            conv.last_message = msg;
+            conv.updated_at = msg.created_at;
+        }
+
+        return msg;
     },
     "startConversation": async ({ phone, is_group }: any) => {
         await delay(300);
@@ -82,6 +96,48 @@ export const mockRegistry: Record<string, MockHandler> = {
             updated_at: new Date().toISOString(),
             participants: []
         } as Conversation;
+    },
+    "readConversation": async (data: any) => {
+        await delay(200);
+        const id = typeof data === "number" ? data : data?.conversation_id;
+        const conv = mockConversations.find((c) => c.id === id);
+        if (conv) {
+            conv.unread_count = 0;
+            const myPart = conv.participants?.find((p) => p.citizenid === "my-id");
+            if (myPart && conv.last_message) {
+                myPart.last_read = conv.last_message.created_at;
+            }
+        }
+        return true;
+    },
+    "archiveConversation": async (data: any) => {
+        await delay(200);
+        const id = data?.conversation_id;
+        const archived = data?.archived;
+        const conv = mockConversations.find((c) => c.id === id);
+        if (conv) {
+            conv.status = archived ? "archived" : "active";
+        }
+        return true;
+    },
+    "deleteConversation": async (data: any) => {
+        await delay(200);
+        const id = typeof data === "number" ? data : data?.conversation_id;
+        const idx = mockConversations.findIndex((c) => c.id === id);
+        if (idx !== -1) {
+            mockConversations.splice(idx, 1);
+        }
+        return true;
+    },
+    "renameConversation": async (data: any) => {
+        await delay(200);
+        const id = data?.conversation_id;
+        const name = data?.name;
+        const conv = mockConversations.find((c) => c.id === id);
+        if (conv) {
+            conv.name = name;
+        }
+        return { success: true, name };
     },
 
     // Account

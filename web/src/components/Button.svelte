@@ -4,7 +4,7 @@
 
     interface Props extends HTMLButtonAttributes {
         variant?: "primary" | "secondary" | "danger" | "icon";
-        children: Snippet;
+        children?: Snippet;
     }
 
     let {
@@ -17,7 +17,7 @@
     let baseClass = $derived(
         variant === "icon"
             ? "p-2 rounded-full transition-colors disabled:opacity-50 flex items-center justify-center"
-            : "p-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center"
+            : "p-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center",
     );
 
     let variantClass = $derived.by(() => {
@@ -36,10 +36,8 @@
     });
 </script>
 
-<button
-    class="{baseClass} {variantClass} {className}"
-    {...rest}
->
-    {@render children()}
+<button class="{baseClass} {variantClass} {className}" {...rest}>
+    {#if children}
+        {@render children()}
+    {/if}
 </button>
-

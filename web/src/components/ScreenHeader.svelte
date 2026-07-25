@@ -5,8 +5,14 @@
     let {
         title,
         onback,
+        ontitleclick,
         actions,
-    }: { title: string; onback?: () => void; actions?: Snippet } = $props();
+    }: {
+        title: string;
+        onback?: () => void;
+        ontitleclick?: () => void;
+        actions?: Snippet;
+    } = $props();
 </script>
 
 <div
@@ -21,7 +27,17 @@
             <ChevronLeftIcon class="h-6 w-6" />
         </button>
     {/if}
-    <h1 class="ml-2 text-xl font-semibold">{title}</h1>
+    {#if ontitleclick}
+        <button
+            type="button"
+            class="ml-2 text-xl font-semibold hover:text-blue-400 transition-colors text-left truncate cursor-pointer group"
+            onclick={ontitleclick}
+        >
+            <span class="truncate">{title}</span>
+        </button>
+    {:else}
+        <h1 class="ml-2 text-xl font-semibold truncate">{title}</h1>
+    {/if}
     {#if actions}
         {@render actions()}
     {/if}

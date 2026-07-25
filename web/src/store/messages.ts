@@ -8,6 +8,7 @@ import { contacts } from "./contacts";
 export interface UIConversation extends Conversation {
     target: string; // The phone number or identifier of the other person
     targetName: string; // Display name
+    targetAvatar?: string; // Contact profile image URL
     lastMessage: string; // Content string
     lastMessageAt: string; // ISO date
     unreadCount: number;
@@ -27,6 +28,7 @@ function createMessagesStore() {
     const resolveDisplayInfo = (conv: Conversation, myId: string, currentContacts: any[]) => {
         let target = "";
         let targetName = conv.name || "Unknown";
+        let targetAvatar: string | undefined = undefined;
 
         if (conv.is_group) {
             target = "group";
@@ -35,31 +37,28 @@ function createMessagesStore() {
             // Find other participant
             const other = conv.participants?.find((p) => p.citizenid !== myId);
             if (other) {
-                // Try to find phone in contact
-                // Assuming participant has contact info hydrated or we match by citizenid?
-                // Shared types say Participant has `contact?: Contact`.
                 if (other.contact) {
                     target = other.contact.phone;
-                    targetName = `${other.contact.firstname} ${other.contact.lastname || ""}`;
+                    targetName = `${other.contact.firstname} ${other.contact.lastname || ""}`.trim();
+                    targetAvatar = other.contact.avatar;
                 } else {
-                    // Try to match from loaded contacts store if not hydrated
-                    // This is a bit weak if citizenid is strictly internal, but let's try
-                    // If we can't find it, we might be stuck. 
-                    // Let's assume for now target is the other citizenid if phone undefined
                     target = other.citizenid;
                 }
             }
         }
 
-        // If we have a phone target, try to improve name from address book if conv.name is empty/default
+        // If we have a phone target, try to improve name & avatar from address book
         if (target && target !== "group") {
             const contact = currentContacts.find(c => c.phone === target);
             if (contact) {
-                targetName = `${contact.firstname} ${contact.lastname || ""}`;
+                targetName = `${contact.firstname} ${contact.lastname || ""}`.trim();
+                if (contact.avatar) {
+                    targetAvatar = contact.avatar;
+                }
             }
         }
 
-        return { target, targetName };
+        return { target, targetName, targetAvatar };
     };
 
     return {
@@ -76,18 +75,21 @@ function createMessagesStore() {
 
             const data = await fetchNui<Conversation[]>("getConversations", null, { defaultValue: [] });
 
-            // Map to UIConversation
-            const mapped: UIConversation[] = (data || []).map(c => {
-                const { target, targetName } = resolveDisplayInfo(c, myId, currentContacts);
-                return {
-                    ...c,
-                    target,
-                    targetName,
-                    lastMessage: c.last_message?.message || "",
-                    lastMessageAt: (c.last_message?.created_at || c.updated_at) as string,
-                    unreadCount: c.unread_count || 0
-                };
-            });
+            // Map to UIConversation & sort newest first
+            const mapped: UIConversation[] = (data || [])
+                .map(c => {
+                    const { target, targetName, targetAvatar } = resolveDisplayInfo(c, myId, currentContacts);
+                    return {
+                        ...c,
+                        target,
+                        targetName,
+                        targetAvatar,
+                        lastMessage: c.last_message?.message || "",
+                        lastMessageAt: (c.last_message?.created_at || c.updated_at) as string,
+                        unreadCount: c.unread_count || 0
+                    };
+                })
+                .sort((a, b) => new Date(b.lastMessageAt || 0).getTime() - new Date(a.lastMessageAt || 0).getTime());
 
             set(mapped);
         },
@@ -123,18 +125,21 @@ function createMessagesStore() {
                     [conversationId]: [...(msgs[conversationId] || []), uiSent]
                 }));
 
-                // Update conversation last message snippet (optimistic)
-                update(convs => convs.map(c => {
-                    if (c.id === conversationId) {
-                        return {
-                            ...c,
-                            lastMessage: sent.message,
-                            lastMessageAt: sent.created_at as string,
-                            last_message: sent
-                        };
-                    }
-                    return c;
-                }));
+                // Update conversation last message snippet (optimistic) and sort to top
+                update(convs => {
+                    const updated = convs.map(c => {
+                        if (c.id === conversationId) {
+                            return {
+                                ...c,
+                                lastMessage: sent.message,
+                                lastMessageAt: sent.created_at as string,
+                                last_message: sent
+                            };
+                        }
+                        return c;
+                    });
+                    return updated.sort((a, b) => new Date(b.lastMessageAt || 0).getTime() - new Date(a.lastMessageAt || 0).getTime());
+                });
 
                 return sent;
             } catch (e) {
@@ -152,11 +157,12 @@ function createMessagesStore() {
                 if (!newConv) return null;
 
                 // Map it
-                const { target, targetName } = resolveDisplayInfo(newConv, myId, currentContacts);
+                const { target, targetName, targetAvatar } = resolveDisplayInfo(newConv, myId, currentContacts);
                 const mapped: UIConversation = {
                     ...newConv,
                     target,
                     targetName,
+                    targetAvatar,
                     lastMessage: "",
                     lastMessageAt: newConv.created_at as string,
                     unreadCount: 0
@@ -167,6 +173,43 @@ function createMessagesStore() {
             } catch (e) {
                 console.error("Failed to start conversation", e);
                 throw e;
+            }
+        },
+
+        markAsRead: async (conversationId: number) => {
+            update(convs => convs.map(c => c.id === conversationId ? { ...c, unreadCount: 0 } : c));
+            try {
+                await fetchNui("readConversation", { conversation_id: conversationId });
+            } catch (e) {
+                console.error("Failed to mark conversation read", e);
+            }
+        },
+
+        archiveConversation: async (conversationId: number, archive: boolean = true) => {
+            const nextStatus = archive ? "archived" : "active";
+            update(convs => convs.map(c => c.id === conversationId ? { ...c, status: nextStatus } : c));
+            try {
+                await fetchNui("archiveConversation", { conversation_id: conversationId, status: nextStatus });
+            } catch (e) {
+                console.error("Failed to archive conversation", e);
+            }
+        },
+
+        deleteConversation: async (conversationId: number) => {
+            update(convs => convs.filter(c => c.id !== conversationId));
+            try {
+                await fetchNui("deleteConversation", { conversation_id: conversationId });
+            } catch (e) {
+                console.error("Failed to delete conversation", e);
+            }
+        },
+
+        renameConversation: async (conversationId: number, name: string) => {
+            update(convs => convs.map(c => c.id === conversationId ? { ...c, name, targetName: name } : c));
+            try {
+                await fetchNui("renameConversation", { conversation_id: conversationId, name });
+            } catch (e) {
+                console.error("Failed to rename conversation", e);
             }
         }
     };
