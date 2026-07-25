@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    /* Default to Light Mode */
+    .bg { fill: #ffffff; }
+    .outline { stroke: #121212; fill: none; }
+    .solid { fill: #121212; }
+    
+    /* Switch to Dark Mode */
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #121212; }
+      .outline { stroke: #ffffff; }
+      .solid { fill: #ffffff; }
+    }
+  </style>
+
+  <!-- Background -->
+  <path class="bg" d="M0 0h512v512H0z"/>
+  
+  <!-- Phone Silhouette (Pixel 10 Pro XL Proportions) -->
+  <rect class="outline" width="198" height="440" x="157" y="36" stroke-width="12" rx="32"/>
+  
+  <!-- Front Facing Camera -->
+  <circle class="solid" cx="256" cy="70" r="8"/>
+  
+  <!-- App Drawer Bar -->
+  <path class="outline" stroke-linecap="round" stroke-width="6" d="M236 450h40"/>
+</svg>
