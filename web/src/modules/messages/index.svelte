@@ -110,6 +110,58 @@
             : messages,
     );
 
+    const MESSAGE_PAGE_SIZE = 50;
+    let displayLimit = $state(MESSAGE_PAGE_SIZE);
+
+    let renderedMessages = $derived.by(() => {
+        if (
+            inChatSearchQuery.trim() ||
+            filteredMessages.length <= displayLimit
+        ) {
+            return filteredMessages;
+        }
+        return filteredMessages.slice(filteredMessages.length - displayLimit);
+    });
+
+    let hiddenMessageCount = $derived(
+        !inChatSearchQuery.trim() && filteredMessages.length > displayLimit
+            ? filteredMessages.length - displayLimit
+            : 0,
+    );
+
+    let renderIndexOffset = $derived(
+        filteredMessages.length - renderedMessages.length,
+    );
+
+    let isLoadingMoreMessages = $state(false);
+    const loadMoreOlderMessages = async () => {
+        if (hiddenMessageCount <= 0 || isLoadingMoreMessages) return;
+        isLoadingMoreMessages = true;
+
+        const container = document.getElementById("messages-container");
+        const prevScrollHeight = container ? container.scrollHeight : 0;
+        const prevScrollTop = container ? container.scrollTop : 0;
+
+        displayLimit += MESSAGE_PAGE_SIZE;
+
+        await tick();
+
+        if (container) {
+            container.scrollTop =
+                container.scrollHeight - prevScrollHeight + prevScrollTop;
+        }
+
+        isLoadingMoreMessages = false;
+    };
+
+    const handleMessagesScroll = (e: Event) => {
+        const target = e.target as HTMLElement;
+        if (!target) return;
+        if (target.scrollTop <= 40 && hiddenMessageCount > 0) {
+            loadMoreOlderMessages();
+        }
+    };
+
     const isMessageReadByOther = (msg: UIMessage) => {
         if (
             !currentConv ||
@@ -189,6 +241,7 @@
             showInChatSearch = false;
             inChatSearchQuery = "";
             unreadDividerIndex = -1;
+            displayLimit = MESSAGE_PAGE_SIZE;
         } else if (showSearch) {
             showSearch = false;
             searchQuery = "";
@@ -206,6 +259,7 @@
     };
 
     const handleSelectConversation = async (id: number) => {
+        displayLimit = MESSAGE_PAGE_SIZE;
         const conv = $messagesStore.find((c) => c.id === id);
         initialUnreadCount = conv?.unreadCount || 0;
         selectedConversationId = id;
@@ -513,9 +567,36 @@
             <div
                 id="messages-container"
                 class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar"
+                onscroll={handleMessagesScroll}
             >
-                {#each filteredMessages as msg, index}
-                    {#if unreadDividerIndex >= 0 && index === unreadDividerIndex}
+                {#if hiddenMessageCount > 0}
+                    <div class="flex justify-center my-2">
+                        <button
+                            type="button"
+                            class="text-xs text-blue-400 bg-gray-800/80 hover:bg-gray-800 border border-blue-500/20 px-3.5 py-1.5 rounded-full transition-colors font-medium shadow-sm cursor-pointer flex items-center gap-2"
+                            onclick={loadMoreOlderMessages}
+                        >
+                            {#if isLoadingMoreMessages}
+                                <span class="relative flex h-2 w-2">
+                                    <span
+                                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"
+                                    ></span>
+                                    <span
+                                        class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"
+                                    ></span>
+                                </span>
+                                <span>Loading older messages...</span>
+                            {:else}
+                                <span
+                                    >Load older messages ({hiddenMessageCount} hidden)</span
+                                >
+                            {/if}
+                        </button>
+                    </div>
+                {/if}
+
+                {#each renderedMessages as msg, index (msg.id)}
+                    {#if unreadDividerIndex >= 0 && index + renderIndexOffset === unreadDividerIndex}
                         <div
                             id="unread-divider"
                             class="flex items-center gap-3 my-4 py-1"

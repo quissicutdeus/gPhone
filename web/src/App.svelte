@@ -11,6 +11,7 @@
   import Home from "./components/Home.svelte";
   import { fetchNui } from "./utils/fetchNui";
   import { mailStore } from "./store/mail";
+  import { bootstrapStores } from "./store/bootstrap";
 
   const components: Record<string, any> = { ...registeredComponents };
   components["home"] = Home;
@@ -87,6 +88,12 @@
       window.removeEventListener("message", handleMessage);
       window.removeEventListener("keydown", handleKeydown);
     };
+  });
+
+  $effect(() => {
+    if (visible) {
+      bootstrapStores();
+    }
   });
 
   // Track if we are currently in the camera app and notify the client
