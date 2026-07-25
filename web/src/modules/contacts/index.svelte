@@ -146,8 +146,6 @@
         try {
             await contactsStore.add({
                 ...newContact,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
             });
             isAdding = false;
             newContact = {
