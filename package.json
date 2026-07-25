@@ -22,7 +22,7 @@
   "author": "quissicutdeus",
   "license": "AGPL-3.0-or-later",
   "devDependencies": {
-    "@citizenfx/client": "2.0.32698-1",
+    "@citizenfx/client": "2.0.33230-1",
     "@citizenfx/server": "2.0.32561-1",
     "@types/node": "^26.1.1",
     "concurrently": "^10.0.3",
