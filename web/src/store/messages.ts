@@ -1,4 +1,4 @@
-import { writable, get } from "svelte/store";
+import { writable, derived, get } from "svelte/store";
 import { fetchNui } from "../utils/fetchNui";
 import type { Conversation, Message } from "@shared/types";
 
@@ -23,6 +23,7 @@ function createMessagesStore() {
 
     // Store messages by conversation ID
     const messagesByConversation = writable<Record<number, UIMessage[]>>({});
+    const activeConversationId = writable<number | null>(null);
 
     // Helper to resolve display info
     const resolveDisplayInfo = (conv: Conversation, myId: string, currentContacts: any[]) => {
@@ -64,6 +65,11 @@ function createMessagesStore() {
     return {
         subscribe,
         messages: { subscribe: messagesByConversation.subscribe },
+        activeConversationId: { subscribe: activeConversationId.subscribe },
+
+        setActiveConversationId: (id: number | null) => {
+            activeConversationId.set(id);
+        },
 
         loadConversations: async () => {
             // Ensure we have citizenid
@@ -95,6 +101,7 @@ function createMessagesStore() {
         },
 
         loadMessages: async (conversationId: number) => {
+            activeConversationId.set(conversationId);
             let myId = get(citizenid);
             if (!myId) myId = await fetchCitizenId();
 
@@ -211,8 +218,79 @@ function createMessagesStore() {
             } catch (e) {
                 console.error("Failed to rename conversation", e);
             }
+        },
+
+        addReceivedMessage: (incoming: { conversation_id?: number; message?: string; senderName?: string; phone?: string; avatar?: string; created_at?: string }) => {
+            const convId = incoming.conversation_id || 1;
+            const currentActiveId = get(activeConversationId);
+            const isCurrentlyActive = currentActiveId === convId;
+
+            update(convs => {
+                let found = false;
+                const updated = convs.map(c => {
+                    if (convId && c.id === convId) {
+                        found = true;
+                        return {
+                            ...c,
+                            unreadCount: isCurrentlyActive ? 0 : (c.unreadCount || 0) + 1,
+                            lastMessage: incoming.message || c.lastMessage,
+                            lastMessageAt: incoming.created_at || new Date().toISOString(),
+                        };
+                    }
+                    return c;
+                });
+                if (!found && convId) {
+                    const newConv: UIConversation = {
+                        id: convId,
+                        citizenid: "",
+                        is_group: false,
+                        target: incoming.phone || "unknown",
+                        targetName: incoming.senderName || incoming.phone || "Unknown",
+                        targetAvatar: incoming.avatar,
+                        lastMessage: incoming.message || "",
+                        lastMessageAt: incoming.created_at || new Date().toISOString(),
+                        unreadCount: isCurrentlyActive ? 0 : 1,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                    };
+                    return [newConv, ...updated];
+                }
+                return updated.sort((a, b) => new Date(b.lastMessageAt || 0).getTime() - new Date(a.lastMessageAt || 0).getTime());
+            });
+
+            if (isCurrentlyActive) {
+                fetchNui("readConversation", { conversation_id: convId }).catch(() => { });
+            }
+
+            // Append to active conversation trail if loaded
+            const newUiMsg: UIMessage = {
+                id: Math.floor(Math.random() * 1000000),
+                conversation_id: convId,
+                citizenid: "other-cit",
+                sender: "other",
+                status: "active",
+                message: incoming.message || "",
+                attachments: [],
+                created_at: incoming.created_at || new Date().toISOString(),
+                updated_at: incoming.created_at || new Date().toISOString(),
+            };
+
+            messagesByConversation.update(msgs => {
+                const currentMsgs = msgs[convId];
+                if (currentMsgs) {
+                    return {
+                        ...msgs,
+                        [convId]: [...currentMsgs, newUiMsg]
+                    };
+                }
+                return msgs;
+            });
         }
     };
 }
 
 export const messagesStore = createMessagesStore();
+
+export const unreadMessagesCount = derived(messagesStore, ($messagesStore: UIConversation[]) =>
+    $messagesStore.reduce((total: number, conv: UIConversation) => total + (conv.unreadCount || 0), 0)
+);

@@ -5,6 +5,7 @@ export interface AppManifest {
     name: string;
     color: string;
     icon: Snippet | any; // Svelte component or snippet
+    badgeStore?: any;
 }
 
 // Glob all manifest.ts files in ../modules/

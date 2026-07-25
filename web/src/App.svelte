@@ -11,7 +11,11 @@
   import Home from "./components/Home.svelte";
   import { fetchNui } from "./utils/fetchNui";
   import { mailStore } from "./store/mail";
+  import { messagesStore } from "./store/messages";
+  import { contacts } from "./store/contacts";
+  import { toast } from "./store/toast";
   import { bootstrapStores } from "./store/bootstrap";
+  import ToastContainer from "./components/ToastContainer.svelte";
 
   const components: Record<string, any> = { ...registeredComponents };
   components["home"] = Home;
@@ -34,12 +38,71 @@
       }
     } else if (action === "receiveMail") {
       mailStore.addReceivedMail(data);
+      toast.showMail({
+        sender: data.sender || "Mail",
+        subject: data.subject || "New Message",
+        onClick: () => {
+          visible = true;
+          openApp("mail");
+        },
+      });
+    } else if (action === "receiveMessage") {
+      messagesStore.addReceivedMessage(data);
+      toast.showIncomingMessage({
+        sender: data.senderName || data.phone || "Message",
+        message: data.message || "",
+        avatar: data.avatar,
+        onReply: async (replyText) => {
+          if (data.conversation_id) {
+            await messagesStore.sendMessage(data.conversation_id, replyText);
+          }
+        },
+        onClick: () => {
+          visible = true;
+          openApp("messages");
+        },
+      });
+    } else if (action === "receiveContactShare" || action === "shareContact") {
+      toast.showContactShare({
+        name: `${data.firstname} ${data.lastname || ""}`.trim(),
+        phone: data.phone,
+        avatar: data.avatar,
+        onAccept: async () => {
+          await contacts.add({
+            firstname: data.firstname,
+            lastname: data.lastname || "",
+            phone: data.phone,
+            avatar: data.avatar,
+            favorite: false,
+          });
+          toast.show({
+            type: "success",
+            message: "Contact added to address book",
+          });
+        },
+        onDecline: () => {
+          toast.show({
+            type: "info",
+            message: "Contact share declined",
+          });
+        },
+      });
     } else if (action === "callStatus") {
       // { status: 'connected' | 'idle' | 'incoming', number: '...', name: '...' }
       if (data.status === "incoming") {
-        visible = true;
         callStore.setIncoming(data.number, data.name);
-        openApp("phone");
+        toast.showCall({
+          name: data.name,
+          number: data.number,
+          onAccept: () => {
+            visible = true;
+            openApp("phone");
+          },
+          onDecline: () => {
+            callStore.setStatus("idle");
+            fetchNui("rejectCall", { number: data.number });
+          },
+        });
       } else {
         callStore.setStatus(data.status);
       }
@@ -84,6 +147,66 @@
       },
     ]);
 
+    if (import.meta.env.DEV) {
+      (window as any).triggerTestToast = (
+        type: "message" | "contact" | "call" | "email" = "message",
+      ) => {
+        if (type === "message") {
+          const testMsg = {
+            conversation_id: 1,
+            senderName: "Ursula (Crazy Ex)",
+            message: "1... 🤬😡🗯️‼️",
+            phone: "555-0199",
+            avatar:
+              "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80",
+          };
+          fetchNui("receiveMessage", testMsg).catch(() => {});
+          window.postMessage(
+            {
+              action: "receiveMessage",
+              data: testMsg,
+            },
+            "*",
+          );
+        } else if (type === "contact") {
+          window.postMessage(
+            {
+              action: "shareContact",
+              data: {
+                firstname: "Franklin",
+                lastname: "Clinton",
+                phone: "555-0177",
+              },
+            },
+            "*",
+          );
+        } else if (type === "call") {
+          window.postMessage(
+            {
+              action: "callStatus",
+              data: {
+                status: "incoming",
+                name: "Lester Crest",
+                number: "555-0155",
+              },
+            },
+            "*",
+          );
+        } else if (type === "email") {
+          window.postMessage(
+            {
+              action: "receiveMail",
+              data: {
+                sender: "Fleeca Bank",
+                subject: "Your Monthly Account Statement is Ready",
+              },
+            },
+            "*",
+          );
+        }
+      };
+    }
+
     return () => {
       window.removeEventListener("message", handleMessage);
       window.removeEventListener("keydown", handleKeydown);
@@ -124,6 +247,7 @@
       transparent={$currentApp.name === "camera"}
       onClose={closePhone}
     >
+      <ToastContainer />
       {#if $currentApp.name === "home"}
         {@const HomeComponent = components["home"]}
         <HomeComponent {openApp} {closePhone} />

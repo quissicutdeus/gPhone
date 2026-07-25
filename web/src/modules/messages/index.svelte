@@ -232,6 +232,7 @@
             inChatSearchQuery = "";
         } else if (selectedConversationId || isComposing) {
             selectedConversationId = null;
+            messagesStore.setActiveConversationId(null);
             isComposing = false;
             newMessageText = "";
             recipientQuery = "";
@@ -634,48 +635,51 @@
             <div
                 class="p-3 bg-gray-800/50 backdrop-blur-md border-t border-gray-700"
             >
-                <div class="flex items-end space-x-2 max-w-full">
+                {#if selectedAttachments.length > 0}
+                    <div
+                        class="flex gap-2 mb-2 p-1 overflow-x-auto no-scrollbar"
+                    >
+                        {#each selectedAttachments as att}
+                            <div
+                                class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-gray-600 shadow-md"
+                            >
+                                <img
+                                    src={att.image}
+                                    alt="Attachment"
+                                    class="w-full h-full object-cover"
+                                />
+                                <button
+                                    class="absolute top-0 right-0 bg-black/60 text-white p-0.5 rounded-bl-lg hover:bg-black cursor-pointer"
+                                    onclick={() =>
+                                        (selectedAttachments =
+                                            selectedAttachments.filter(
+                                                (a) =>
+                                                    a.photo_id !== att.photo_id,
+                                            ))}
+                                    aria-label="Remove attachment"
+                                >
+                                    <CloseIcon class="h-3 w-3" />
+                                </button>
+                            </div>
+                        {/each}
+                    </div>
+                {/if}
+
+                <div class="flex items-center gap-2.5 w-full">
                     <button
-                        class="p-2 text-gray-400 hover:text-blue-400 transition-colors rounded-full hover:bg-gray-700/50"
+                        type="button"
+                        class="w-9 h-9 flex items-center justify-center rounded-full text-gray-400 hover:text-blue-400 hover:bg-gray-700/50 transition-colors shrink-0 cursor-pointer"
                         onclick={() => (showAttachMenu = !showAttachMenu)}
                         aria-label="Attachments"
                     >
-                        <PaperclipIcon />
+                        <PaperclipIcon class="w-5 h-5" />
                     </button>
 
-                    <div class="flex-1 relative">
-                        {#if selectedAttachments.length > 0}
-                            <div
-                                class="flex gap-2 mb-2 p-1 overflow-x-auto no-scrollbar"
-                            >
-                                {#each selectedAttachments as att}
-                                    <div
-                                        class="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-gray-600"
-                                    >
-                                        <img
-                                            src={att.image}
-                                            alt="Attachment"
-                                            class="w-full h-full object-cover"
-                                        />
-                                        <button
-                                            class="absolute top-0 right-0 bg-black/60 text-white p-0.5 rounded-bl-lg hover:bg-black"
-                                            onclick={() =>
-                                                (selectedAttachments =
-                                                    selectedAttachments.filter(
-                                                        (a) =>
-                                                            a.photo_id !==
-                                                            att.photo_id,
-                                                    ))}
-                                            aria-label="Remove attachment"
-                                        >
-                                            <CloseIcon class="h-3 w-3" />
-                                        </button>
-                                    </div>
-                                {/each}
-                            </div>
-                        {/if}
+                    <div
+                        class="flex-1 flex items-center bg-gray-700/50 text-white rounded-2xl px-3.5 py-1.5 border border-transparent focus-within:border-blue-500/50 focus-within:ring-1 focus-within:ring-blue-500"
+                    >
                         <textarea
-                            class="w-full bg-gray-700/50 text-white rounded-2xl px-4 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none max-h-32 min-h-[40px] no-scrollbar"
+                            class="w-full bg-transparent text-white placeholder-gray-400 text-sm focus:outline-none resize-none max-h-32 min-h-[22px] h-[22px] leading-normal no-scrollbar p-0"
                             placeholder="Message"
                             rows="1"
                             bind:value={newMessageText}
@@ -689,13 +693,14 @@
                     </div>
 
                     <button
-                        class="p-2 bg-blue-600 rounded-full hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20"
+                        type="button"
+                        class="w-9 h-9 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-md shrink-0 cursor-pointer"
                         onclick={handleSendMessage}
                         disabled={!newMessageText.trim() &&
                             selectedAttachments.length === 0}
                         aria-label="Send"
                     >
-                        <SendIcon />
+                        <SendIcon class="w-4 h-4 text-white" />
                     </button>
                 </div>
 
@@ -787,7 +792,7 @@
                         />
                         {#if conv.unreadCount > 0}
                             <div
-                                class="absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full bg-blue-500 text-[10px] font-bold flex items-center justify-center px-1 border-2 border-gray-900 shadow-md animate-pulse"
+                                class="absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full bg-blue-500 text-[10px] font-bold flex items-center justify-center px-1 border-2 border-gray-900 shadow-md"
                             >
                                 {conv.unreadCount}
                             </div>

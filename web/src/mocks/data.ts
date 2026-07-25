@@ -295,7 +295,8 @@ const crazyExPrompts = [
     "We need to talk about our future.",
     "Answer or I start screaming.",
     "3...",
-    "2..."
+    "2...",
+    "1... 🤬😡🗯️‼️"
 ];
 
 const gtaPromptsByConv: Record<number, string[]> = {

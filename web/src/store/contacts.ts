@@ -17,7 +17,7 @@ function createContactsStore() {
                 set([]);
             }
         },
-        add: async (contact: Omit<Contact, "id" | "citizenid">) => {
+        add: async (contact: Omit<Contact, "id" | "citizenid" | "created_at" | "updated_at">) => {
             try {
                 const newContact = await fetchNui<Contact>("createContact", contact);
                 if (newContact) {

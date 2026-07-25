@@ -16,6 +16,7 @@
                 name={app.name}
                 color={app.color}
                 icon={app.icon}
+                badgeStore={app.badgeStore}
                 onclick={() => openApp(app.id)}
             />
         {/each}

@@ -2,12 +2,12 @@
     interface Props {
         class?: string;
     }
-    let { class: className = "h-6 w-6" }: Props = $props();
+    let { class: className = "h-5 w-5" }: Props = $props();
 </script>
 
 <svg
     xmlns="http://www.w3.org/2000/svg"
-    class={className}
+    class="{className} shrink-0"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
