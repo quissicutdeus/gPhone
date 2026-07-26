@@ -2,9 +2,12 @@
     import { fly } from "svelte/transition";
     import { formattedTime } from "../store/time";
     import { goHome } from "../store/navigation";
-    import { displayCharge, isDead, roundedCharge } from "../store/charge";
+    import { displayCharge, isDead } from "../store/charge";
+    import { clampedSignalLevel } from "../store/signal";
+    import { adjustVolume } from "../store/sound";
     import LightningWarningIcon from "./icons/LightningWarningIcon.svelte";
     import SignalIcon from "./icons/SignalIcon.svelte";
+    import VolumeHud from "./VolumeHud.svelte";
 
     let { transparent = false, onClose, children } = $props();
 </script>
@@ -16,17 +19,30 @@
     class:bg-black={!transparent || $isDead}
     class:bg-transparent={transparent && !$isDead}
 >
-    <!-- Side Buttons -->
-    <!-- Power Button -->
+    <!-- Hardware Side Buttons -->
+    <!-- Power / Screen Off Button -->
     <button
-        class="absolute -right-[13px] top-[180px] h-12 w-[5px] rounded-r-md bg-gray-800 cursor-pointer hover:bg-gray-700"
+        class="absolute -right-[13px] top-[180px] h-12 w-[5px] rounded-r-md bg-gray-800 cursor-pointer hover:bg-gray-700 active:bg-gray-600 transition-colors"
         onclick={onClose}
-        title="Close Phone"
+        title="Power / Screen Off"
+        aria-label="Power / Screen Off"
     ></button>
+
     <!-- Volume Buttons -->
-    <div
-        class="absolute -right-[13px] top-[250px] h-24 w-[5px] rounded-r-md bg-gray-800"
-    ></div>
+    <div class="absolute -right-[13px] top-[250px] flex flex-col gap-2">
+        <button
+            class="h-10 w-[5px] rounded-r-md bg-gray-800 cursor-pointer hover:bg-gray-700 active:bg-gray-600 transition-colors"
+            onclick={() => adjustVolume(0.1)}
+            title="Volume Up"
+            aria-label="Volume Up"
+        ></button>
+        <button
+            class="h-10 w-[5px] rounded-r-md bg-gray-800 cursor-pointer hover:bg-gray-700 active:bg-gray-600 transition-colors"
+            onclick={() => adjustVolume(-0.1)}
+            title="Volume Down"
+            aria-label="Volume Down"
+        ></button>
+    </div>
 
     <!-- Screen -->
     <div
@@ -35,6 +51,9 @@
         class:bg-black={$isDead}
         class:bg-transparent={transparent && !$isDead}
     >
+        <!-- On-Screen Volume HUD Overlay -->
+        <VolumeHud />
+
         <!-- Dead Phone Screen Overlay -->
         {#if $isDead}
             <div
@@ -81,7 +100,7 @@
             >
                 <span>{$formattedTime}</span>
                 <div class="flex items-center gap-2">
-                    <SignalIcon />
+                    <SignalIcon level={$clampedSignalLevel} />
 
                     <!-- Battery Status Indicator -->
                     <div class="flex items-center gap-1.5">
@@ -126,7 +145,7 @@
             </div>
         {/if}
 
-        <!-- Home Indicator -->
+        <!-- Home Indicator Gesture Bar -->
         <button
             class="absolute bottom-0 left-0 z-50 flex h-8 w-full cursor-pointer items-end justify-center pb-2"
             onclick={goHome}

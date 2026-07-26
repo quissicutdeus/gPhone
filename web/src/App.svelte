@@ -1,12 +1,15 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { debugData } from "./utils/debug";
+  import { isBrowser } from "./utils/isBrowser";
   import { time } from "./store/time";
   import { charge } from "./store/charge";
+  import { setSignal } from "./store/signal";
   import { currentApp, openApp, goHome, closePhone } from "./store/navigation";
   import { callStore } from "./store/call";
   import { isTakingPhoto } from "./store/camera";
   import PhoneFrame from "./components/PhoneFrame.svelte";
+  import MockDevTools from "./components/MockDevTools.svelte";
   import { appRegistryStore } from "./store/registry";
   import Home from "./components/Home.svelte";
   import { fetchNui } from "./utils/fetchNui";
@@ -33,6 +36,10 @@
     } else if (action === "setCharge") {
       if (typeof data === "number") {
         charge.set(data);
+      }
+    } else if (action === "setSignal") {
+      if (typeof data === "number") {
+        setSignal(data);
       }
     } else if (action === "installApp" || action === "gphone:installApp") {
       if (data?.url) {
@@ -283,6 +290,10 @@
   });
 </script>
 
+{#if isBrowser()}
+  <MockDevTools bind:visible />
+{/if}
+
 {#if visible}
   <main
     class="flex h-screen w-screen overflow-hidden p-12"
@@ -298,7 +309,12 @@
   >
     <PhoneFrame
       transparent={$currentApp.name === "camera"}
-      onClose={closePhone}
+      onClose={() => {
+        if (isBrowser()) {
+          visible = false;
+        }
+        closePhone();
+      }}
     >
       <ToastContainer />
       {#if $currentApp.name === "home"}

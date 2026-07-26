@@ -102,33 +102,37 @@
     class="flex flex-col h-full bg-black text-white relative select-none"
 >
     {#if photoUri}
-        <!-- Photo Preview Screen -->
-        <div class="relative flex-1 bg-black flex items-center justify-center">
-            <img
-                src={photoUri}
-                alt="Captured preview"
-                class="w-full h-full object-cover"
-            />
-
-            <!-- Top bar -->
-            <div
-                class="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent"
-            >
+        <!-- Photo Preview Screen (Framed like standard OS apps) -->
+        <div class="flex flex-col h-full bg-gray-950 text-white">
+            <!-- Top Header Bar -->
+            <div class="flex items-center justify-between px-4 pt-2 pb-2.5 border-b border-gray-800 bg-gray-900/90 backdrop-blur-md z-10">
                 <button
                     onclick={() => (photoUri = null)}
-                    class="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+                    class="p-1.5 rounded-full hover:bg-gray-800 text-gray-300 hover:text-white transition-colors"
+                    aria-label="Back to camera"
                 >
                     <ChevronLeftIcon class="h-6 w-6" />
                 </button>
+                <span class="font-semibold text-sm tracking-wide text-gray-200">Photo Preview</span>
+                <div class="w-8"></div>
+            </div>
+
+            <!-- Framed Photo Container -->
+            <div class="flex-1 p-4 flex items-center justify-center overflow-hidden">
+                <div class="relative w-full h-full rounded-2xl overflow-hidden border border-gray-800/80 shadow-2xl bg-black flex items-center justify-center">
+                    <img
+                        src={photoUri}
+                        alt="Captured preview"
+                        class="w-full h-full object-contain"
+                    />
+                </div>
             </div>
 
             <!-- Bottom Action Bar -->
-            <div
-                class="absolute bottom-0 left-0 right-0 p-6 flex justify-around items-center bg-gradient-to-t from-black/80 to-transparent pb-10"
-            >
+            <div class="p-4 pb-8 flex justify-around items-center bg-gray-900/90 border-t border-gray-800 backdrop-blur-md z-10">
                 <button
                     onclick={() => (photoUri = null)}
-                    class="px-6 py-2.5 rounded-full bg-gray-800 text-white font-medium hover:bg-gray-700 transition-colors text-sm"
+                    class="px-6 py-2.5 rounded-full bg-gray-800 text-gray-200 font-medium hover:bg-gray-700 transition-colors text-sm border border-gray-700 shadow"
                 >
                     Retake
                 </button>

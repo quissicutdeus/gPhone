@@ -1,9 +1,48 @@
-import { writable, get } from "svelte/store";
+import { writable, derived, get } from "svelte/store";
 
 export type SoundEffect = "click" | "pop" | "camera" | "notification" | "ringtone";
 
 export const soundVolume = writable<number>(0.5);
 export const soundMuted = writable<boolean>(false);
+export const volumeHudVisible = writable<boolean>(false);
+
+let hudTimeout: ReturnType<typeof setTimeout> | null = null;
+
+export const soundVolumePercent = derived([soundVolume, soundMuted], ([$volume, $muted]) => {
+    if ($muted) return 0;
+    return Math.round(Math.max(0, Math.min(1, $volume)) * 100);
+});
+
+export const setVolume = (val: number) => {
+    const clamped = Math.max(0, Math.min(1, val));
+    soundVolume.set(clamped);
+    if (clamped === 0) {
+        soundMuted.set(true);
+    } else if (get(soundMuted)) {
+        soundMuted.set(false);
+    }
+    showVolumeHud();
+};
+
+export const adjustVolume = (delta: number) => {
+    const current = get(soundVolume);
+    const next = Math.max(0, Math.min(1, current + delta));
+    setVolume(next);
+    soundService.play("click");
+};
+
+export const toggleMute = () => {
+    soundMuted.update(($muted) => !$muted);
+    showVolumeHud();
+};
+
+export const showVolumeHud = () => {
+    volumeHudVisible.set(true);
+    if (hudTimeout) clearTimeout(hudTimeout);
+    hudTimeout = setTimeout(() => {
+        volumeHudVisible.set(false);
+    }, 1500);
+};
 
 class SoundService {
     private audioCtx: AudioContext | null = null;

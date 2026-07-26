@@ -8,10 +8,10 @@ test.describe('Calculator App E2E', () => {
   });
 
   test('performs basic addition: 7 + 8 = 15', async ({ page }) => {
-    const btn7 = page.locator('button', { hasText: '7' }).first();
-    const btnPlus = page.locator('button', { hasText: '+' }).first();
-    const btn8 = page.locator('button', { hasText: '8' }).first();
-    const btnEquals = page.locator('button', { hasText: '=' }).first();
+    const btn7 = page.locator('button', { hasText: /^7$/ }).first();
+    const btnPlus = page.locator('button', { hasText: /^\+$/ }).first();
+    const btn8 = page.locator('button', { hasText: /^8$/ }).first();
+    const btnEquals = page.locator('button', { hasText: /^=$/ }).first();
 
     await btn7.click();
     await btnPlus.click();
@@ -23,8 +23,8 @@ test.describe('Calculator App E2E', () => {
   });
 
   test('clears display when C is pressed', async ({ page }) => {
-    const btn9 = page.locator('button', { hasText: '9' }).first();
-    const btnC = page.locator('button', { hasText: 'C' }).first();
+    const btn9 = page.locator('button', { hasText: /^9$/ }).first();
+    const btnC = page.locator('button', { hasText: /^C$/ }).first();
 
     await btn9.click();
     await btnC.click();
@@ -34,10 +34,10 @@ test.describe('Calculator App E2E', () => {
   });
 
   test('performs multiplication: 5 × 4 = 20', async ({ page }) => {
-    const btn5 = page.locator('button', { hasText: '5' }).first();
-    const btnMult = page.locator('button', { hasText: '×' }).first();
-    const btn4 = page.locator('button', { hasText: '4' }).first();
-    const btnEquals = page.locator('button', { hasText: '=' }).first();
+    const btn5 = page.locator('button', { hasText: /^5$/ }).first();
+    const btnMult = page.locator('button', { hasText: /^×$/ }).first();
+    const btn4 = page.locator('button', { hasText: /^4$/ }).first();
+    const btnEquals = page.locator('button', { hasText: /^=$/ }).first();
 
     await btn5.click();
     await btnMult.click();
