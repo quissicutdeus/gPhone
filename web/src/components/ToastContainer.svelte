@@ -44,7 +44,8 @@
         }
     };
 
-    const handleSendReply = async (t: ToastMessage) => {
+    const handleSendReply = async (t: ToastMessage, e?: MouseEvent) => {
+        e?.stopPropagation();
         const text = replyInputs[t.id] || "";
         if (!text.trim() || !t.onReply) return;
         try {
@@ -61,7 +62,8 @@
         }
     };
 
-    const handleActionClick = async (t: ToastMessage, action: ToastAction) => {
+    const handleActionClick = async (t: ToastMessage, action: ToastAction, e?: MouseEvent) => {
+        e?.stopPropagation();
         try {
             await action.onClick(replyInputs[t.id]);
             toast.dismiss(t.id);
@@ -79,10 +81,15 @@
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
                 transition:fly={{ y: -20, duration: 250 }}
-                class="pointer-events-auto flex flex-col p-3 rounded-2xl border backdrop-blur-2xl shadow-2xl transition-all space-y-2.5 {getBgColor(
+                class="pointer-events-auto flex flex-col p-3 rounded-2xl border backdrop-blur-2xl shadow-2xl transition-all space-y-2.5 cursor-pointer hover:scale-[1.01] active:scale-[0.99] {getBgColor(
                     t.type,
                 )}"
-                onclick={() => t.onClick?.()}
+                onclick={async () => {
+                    if (t.onClick) {
+                        await t.onClick();
+                    }
+                    toast.dismiss(t.id);
+                }}
                 onmouseenter={() => toast.pauseDismiss(t.id)}
                 onmouseleave={() => toast.resumeDismiss(t.id, 4000)}
                 onfocusin={() => toast.pauseDismiss(t.id)}
@@ -159,7 +166,7 @@
                             type="button"
                             class="p-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors shrink-0 disabled:opacity-50 cursor-pointer shadow-md"
                             disabled={!replyInputs[t.id]?.trim()}
-                            onclick={() => handleSendReply(t)}
+                            onclick={(e) => handleSendReply(t, e)}
                             aria-label="Send reply"
                         >
                             <SendIcon class="w-3.5 h-3.5" />
@@ -180,7 +187,7 @@
                                 class="px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-md transition-all cursor-pointer {getActionBtnClass(
                                     act.variant,
                                 )}"
-                                onclick={() => handleActionClick(t, act)}
+                                onclick={(e) => handleActionClick(t, act, e)}
                             >
                                 {act.label}
                             </button>

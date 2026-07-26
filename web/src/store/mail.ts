@@ -47,7 +47,11 @@ function createMailStore() {
             }
         },
         addReceivedMail: (newMail: Mail) => {
-            update(mails => [newMail, ...mails]);
+            update(mails => {
+                const idExists = newMail.id && mails.some(m => m.id === newMail.id);
+                const safeId = idExists || !newMail.id ? Date.now() : newMail.id;
+                return [{ ...newMail, id: safeId, status: newMail.status || "active" }, ...mails];
+            });
         }
     };
 }

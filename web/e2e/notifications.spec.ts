@@ -124,4 +124,98 @@ test.describe('Interactive Toast Notifications E2E', () => {
     await expect(page.locator('text=New Email: Fleeca Bank')).toBeVisible();
     await expect(page.locator('text=Your Monthly Statement is Ready')).toBeVisible();
   });
+
+  test('clicking message toast area opens Messages app deep link', async ({ page }) => {
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            action: 'receiveMessage',
+            data: {
+              conversation_id: 1,
+              senderName: 'Trevor Philips',
+              message: 'Check airfield!',
+            },
+          },
+        })
+      );
+    });
+
+    const toastCard = page.locator('.pointer-events-auto', { hasText: 'Trevor Philips' }).first();
+    await expect(toastCard).toBeVisible();
+    await toastCard.evaluate(el => el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
+
+    // Verify Messages conversation view opens
+    await expect(page.locator('#messages-container')).toBeVisible();
+  });
+
+  test('clicking email toast area opens Mail app deep link', async ({ page }) => {
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            action: 'receiveMail',
+            data: {
+              id: 1,
+              sender: 'Fleeca Bank',
+              subject: 'Monthly Statement Available',
+            },
+          },
+        })
+      );
+    });
+
+    const toastCard = page.locator('.pointer-events-auto', { hasText: 'New Email: Fleeca Bank' }).first();
+    await expect(toastCard).toBeVisible();
+    await toastCard.evaluate(el => el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
+
+    // Verify Mail app opens
+    await expect(page.locator('h1').first()).toBeVisible();
+  });
+
+  test('clicking shared contact toast body accepts contact without navigating', async ({ page }) => {
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            action: 'shareContact',
+            data: {
+              firstname: 'Franklin',
+              lastname: 'Clinton',
+              phone: '555-0177',
+            },
+          },
+        })
+      );
+    });
+
+    const toastCard = page.locator('.pointer-events-auto', { hasText: 'Contact Shared' }).first();
+    await expect(toastCard).toBeVisible();
+    await toastCard.dispatchEvent('click');
+
+    // Verify confirmation toast appears
+    await expect(page.locator('text=Contact added to address book')).toBeVisible();
+  });
+
+  test('shows error toast when accepting shared contact with missing mandatory name/phone', async ({ page }) => {
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            action: 'shareContact',
+            data: {
+              firstname: '',
+              phone: '',
+            },
+          },
+        })
+      );
+    });
+
+    const acceptBtn = page.locator('button', { hasText: 'Accept' }).first();
+    await expect(acceptBtn).toBeVisible();
+    await acceptBtn.dispatchEvent('click');
+
+    await expect(page.locator('text=Cannot add contact: missing required name or phone number')).toBeVisible();
+  });
 });

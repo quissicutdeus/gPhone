@@ -34,9 +34,11 @@
     import PhotoPickerModal from "../../components/PhotoPickerModal.svelte";
     import FloatingActionButton from "../../components/FloatingActionButton.svelte";
 
-    let { onback, initialContact } = $props<{
+    let { onback, initialContact, conversationId, phone } = $props<{
         onback?: () => void;
         initialContact?: Contact;
+        conversationId?: number;
+        phone?: string;
     }>();
 
     // Local state for UI
@@ -356,13 +358,22 @@
         if (el) el.scrollTop = el.scrollHeight;
     };
 
-    // If initialContact is provided, auto-start conversation
+    // Load conversations on mount; deep-link navigation is handled by the $effect below
     onMount(() => {
-        messagesStore.loadConversations().then(() => {
-            if (initialContact) {
-                handleSelectContactRaw(initialContact);
+        messagesStore.loadConversations();
+    });
+
+    $effect(() => {
+        if (conversationId && conversationId !== selectedConversationId) {
+            handleSelectConversation(conversationId);
+        } else if (phone && (!currentConv || currentConv.target !== phone)) {
+            const existing = $messagesStore.find((c) => c.target === phone);
+            if (existing) {
+                handleSelectConversation(existing.id);
             }
-        });
+        } else if (initialContact && !selectedConversationId && !isComposing) {
+            handleSelectContactRaw(initialContact);
+        }
     });
 
     useScrollDetect((v) => (isScrolled = v));

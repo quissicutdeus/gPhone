@@ -18,6 +18,10 @@ function createContactsStore() {
             }
         },
         add: async (contact: Omit<Contact, "id" | "citizenid" | "created_at" | "updated_at">) => {
+            if (!contact.firstname?.trim() || !contact.phone?.trim()) {
+                console.error("Failed to create contact: missing required firstname or phone");
+                throw new Error("First name and phone number are required.");
+            }
             try {
                 const newContact = await fetchNui<Contact>("createContact", contact);
                 if (newContact) {
@@ -30,6 +34,10 @@ function createContactsStore() {
             }
         },
         update: async (contact: Contact) => {
+            if (!contact.firstname?.trim() || !contact.phone?.trim()) {
+                console.error("Failed to update contact: missing required firstname or phone");
+                throw new Error("First name and phone number are required.");
+            }
             try {
                 await fetchNui("updateContact", contact);
                 update(n => n.map(c => c.id === contact.id ? contact : c));
@@ -46,6 +54,11 @@ function createContactsStore() {
             }
         },
         share: async (payload: Partial<Contact> & { name?: string; phone: string }) => {
+            const firstname = payload.firstname || payload.name?.split(" ")[0];
+            if (!firstname?.trim() || !payload.phone?.trim()) {
+                console.error("Failed to share contact: missing required name or phone");
+                throw new Error("First name and phone number are required to share contact.");
+            }
             try {
                 await fetchNui("shareContact", payload);
             } catch (e) {

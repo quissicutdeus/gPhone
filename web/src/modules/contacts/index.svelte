@@ -30,6 +30,7 @@
     import { useScrollDetect } from "../../utils/useScrollDetect";
     import FloatingActionButton from "../../components/FloatingActionButton.svelte";
     import PhotoPickerModal from "../../components/PhotoPickerModal.svelte";
+    import { toast } from "../../store/toast";
 
     let { onback } = $props();
 
@@ -143,9 +144,20 @@
     };
 
     const addContact = async () => {
+        if (!newContact.firstname.trim() || !newContact.phone.trim()) {
+            toast.show({
+                type: "error",
+                message: "First name and phone number are required.",
+            });
+            return;
+        }
         try {
             await contactsStore.add({
-                ...newContact,
+                firstname: newContact.firstname.trim(),
+                lastname: newContact.lastname.trim(),
+                phone: newContact.phone.trim(),
+                avatar: newContact.avatar,
+                favorite: newContact.favorite,
             });
             isAdding = false;
             newContact = {
@@ -155,20 +167,35 @@
                 avatar: "",
                 favorite: false,
             };
-        } catch (e) {
+            toast.show({
+                type: "success",
+                message: "Contact added successfully",
+            });
+        } catch (e: any) {
             console.error("Failed to create contact", e);
+            toast.show({
+                type: "error",
+                message: e.message || "Failed to create contact",
+            });
         }
     };
 
     const updateContact = async () => {
         if (!selectedContact) return;
+        if (!selectedContact.firstname.trim() || !selectedContact.phone.trim()) {
+            toast.show({
+                type: "error",
+                message: "First name and phone number are required.",
+            });
+            return;
+        }
         try {
             // Sanitize payload to only include updatable fields
             const payload = {
                 id: selectedContact.id, // ID is required for update in ServerApp
-                firstname: selectedContact.firstname,
-                lastname: selectedContact.lastname,
-                phone: selectedContact.phone,
+                firstname: selectedContact.firstname.trim(),
+                lastname: selectedContact.lastname ? selectedContact.lastname.trim() : "",
+                phone: selectedContact.phone.trim(),
                 favorite: selectedContact.favorite,
                 avatar: selectedContact.avatar,
                 citizenid: selectedContact.citizenid, // Required for type safety
@@ -178,8 +205,16 @@
 
             await contactsStore.update(payload);
             isEditing = false;
-        } catch (e) {
+            toast.show({
+                type: "success",
+                message: "Contact updated successfully",
+            });
+        } catch (e: any) {
             console.error("Failed to update contact", e);
+            toast.show({
+                type: "error",
+                message: e.message || "Failed to update contact",
+            });
         }
     };
 
@@ -201,16 +236,31 @@
 
     const shareContact = async () => {
         if (!selectedContact) return;
+        if (!selectedContact.firstname.trim() || !selectedContact.phone.trim()) {
+            toast.show({
+                type: "error",
+                message: "First name and phone number are required to share contact.",
+            });
+            return;
+        }
         try {
             await contactsStore.share({
-                name: `${selectedContact.firstname} ${selectedContact.lastname || ""}`.trim(),
-                firstname: selectedContact.firstname,
-                lastname: selectedContact.lastname,
-                phone: selectedContact.phone,
+                name: `${selectedContact.firstname.trim()} ${selectedContact.lastname?.trim() || ""}`.trim(),
+                firstname: selectedContact.firstname.trim(),
+                lastname: selectedContact.lastname?.trim() || "",
+                phone: selectedContact.phone.trim(),
                 avatar: selectedContact.avatar || "",
             });
-        } catch (e) {
+            toast.show({
+                type: "success",
+                message: "Contact shared successfully",
+            });
+        } catch (e: any) {
             console.error("Failed to share contact", e);
+            toast.show({
+                type: "error",
+                message: e.message || "Failed to share contact",
+            });
         }
     };
 
@@ -308,7 +358,7 @@
 
                 <input
                     class="w-full p-2 bg-gray-700 rounded text-sm text-white placeholder-gray-400"
-                    placeholder="First Name"
+                    placeholder="First Name *"
                     bind:value={newContact.firstname}
                 />
                 <input
@@ -318,7 +368,7 @@
                 />
                 <input
                     class="w-full p-2 bg-gray-700 rounded text-sm text-white placeholder-gray-400"
-                    placeholder="Phone Number"
+                    placeholder="Phone Number *"
                     bind:value={newContact.phone}
                 />
                 <label
@@ -340,7 +390,7 @@
                     >
                         Cancel
                     </Button>
-                    <Button class="flex-1 text-xs" onclick={addContact}>
+                    <Button class="flex-1 text-xs" onclick={addContact} disabled={!newContact.firstname.trim() || !newContact.phone.trim()}>
                         Save Contact
                     </Button>
                 </div>
@@ -497,6 +547,7 @@
                     variant="icon"
                     class="bg-gray-700 hover:bg-gray-600 text-white hover:text-white"
                     onclick={shareContact}
+                    disabled={!selectedContact?.firstname?.trim() || !selectedContact?.phone?.trim()}
                     aria-label="Share"
                 >
                     <!-- Share Icon -->
@@ -529,7 +580,7 @@
                         <input
                             class="w-full p-2 bg-gray-700 rounded"
                             bind:value={selectedContact.firstname}
-                            placeholder="First Name"
+                            placeholder="First Name *"
                         />
                         <input
                             class="w-full p-2 bg-gray-700 rounded"
@@ -539,7 +590,7 @@
                         <input
                             class="w-full p-2 bg-gray-700 rounded"
                             bind:value={selectedContact.phone}
-                            placeholder="Phone"
+                            placeholder="Phone *"
                         />
                         <label class="flex items-center space-x-2">
                             <input
@@ -548,7 +599,7 @@
                             />
                             <span>Favorite</span>
                         </label>
-                        <Button class="w-full" onclick={updateContact}>
+                        <Button class="w-full" onclick={updateContact} disabled={!selectedContact.firstname.trim() || !selectedContact.phone.trim()}>
                             Save Changes
                         </Button>
                     </div>

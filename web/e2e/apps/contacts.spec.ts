@@ -20,4 +20,26 @@ test.describe('Contacts App E2E', () => {
       await expect(searchInput).toHaveValue('John');
     }
   });
+
+  test('disables Save Contact button when mandatory first name or phone number is missing', async ({ page }) => {
+    // Look for FAB / Add contact button
+    const fabBtn = page.locator('button[aria-label="Add Contact"]').or(page.locator('button', { hasText: '+' })).first();
+    if (await fabBtn.isVisible()) {
+      await fabBtn.click();
+      
+      const saveBtn = page.locator('button', { hasText: 'Save Contact' }).first();
+      await expect(saveBtn).toBeDisabled();
+
+      const firstnameInput = page.locator('input[placeholder="First Name *"]');
+      const phoneInput = page.locator('input[placeholder="Phone Number *"]');
+      await expect(firstnameInput).toBeVisible();
+      await expect(phoneInput).toBeVisible();
+
+      await firstnameInput.fill('Arthur');
+      await expect(saveBtn).toBeDisabled();
+
+      await phoneInput.fill('555-0999');
+      await expect(saveBtn).toBeEnabled();
+    }
+  });
 });

@@ -17,7 +17,11 @@
     "watch:web": "pnpm --filter web dev",
     "test": "pnpm --filter web test",
     "test:unit": "pnpm --filter web test:unit",
-    "test:e2e": "pnpm --filter web test:e2e"
+    "playwright": "pnpm --filter web exec playwright",
+    "test:e2e:install": "pnpm --filter web test:e2e:install",
+    "test:e2e": "pnpm --filter web test:e2e",
+    "test:e2e:headed": "pnpm --filter web test:e2e:headed",
+    "test:e2e:report": "pnpm --filter web test:e2e:report"
   },
   "author": "quissicutdeus",
   "license": "AGPL-3.0-or-later",

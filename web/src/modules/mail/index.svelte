@@ -10,12 +10,23 @@
     import EmptyState from "../../components/EmptyState.svelte";
     import ListItem from "../../components/ListItem.svelte";
 
-    let { onback } = $props<{ onback?: () => void }>();
+    let { onback, mailId } = $props<{ onback?: () => void; mailId?: number }>();
     let selectedMail = $state<Mail | null>(null);
     let activeTab = $state<"inbox" | "archive">("inbox");
 
     onMount(() => {
-        mailStore.load();
+        if ($mailStore.length === 0) {
+            mailStore.load();
+        }
+    });
+
+    $effect(() => {
+        if (mailId && $mailStore.length > 0) {
+            const found = $mailStore.find(m => m.id === mailId);
+            if (found && selectedMail?.id !== mailId) {
+                openMail(found);
+            }
+        }
     });
 
     let activeEmails = $derived(

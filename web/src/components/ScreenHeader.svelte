@@ -28,13 +28,15 @@
         </button>
     {/if}
     {#if ontitleclick}
-        <button
-            type="button"
-            class="ml-2 text-xl font-semibold hover:text-blue-400 transition-colors text-left truncate cursor-pointer group"
-            onclick={ontitleclick}
-        >
-            <span class="truncate">{title}</span>
-        </button>
+        <h1 class="ml-2 truncate min-w-0">
+            <button
+                type="button"
+                class="text-xl font-semibold hover:text-blue-400 transition-colors text-left truncate cursor-pointer group"
+                onclick={ontitleclick}
+            >
+                <span class="truncate">{title}</span>
+            </button>
+        </h1>
     {:else}
         <h1 class="ml-2 text-xl font-semibold truncate">{title}</h1>
     {/if}

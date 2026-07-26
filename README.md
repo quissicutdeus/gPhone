@@ -1,7 +1,7 @@
 <h1 align="center">gPhone</h1>
 
 <p align="center">
-  <b>A modern, open-source custom phone resource for FiveM</b><br/>
+  <b>A modern, open-source custom phone resource for FiveM</b> — <a href="https://gphone.site/">Live Demo</a><br/>
   Powered by TypeScript, Svelte 5, Vite, Tailwind CSS v4, and esbuild.
 </p>
 
@@ -84,7 +84,7 @@ Before installing, ensure your server environment meets the following requiremen
 
 ## Development
 
-`gphone` uses `pnpm` workspaces for concurrent frontend and client/server development with live hot-reloading:
+gPhone uses `pnpm` workspaces for concurrent frontend and client/server development with live hot-reloading:
 
 ### Start Development Server
 ```sh
@@ -96,6 +96,22 @@ This runs watch scripts for client/server bundles (`pnpm watch`) and the Vite we
 Run type checks across all modules (client, server, and web):
 ```sh
 pnpm typecheck
+```
+
+### Testing & Quality Assurance
+Run unit and Playwright End-to-End (E2E) test suites:
+```sh
+# Run all unit tests (Vitest)
+pnpm test:unit
+
+# Run full Playwright E2E suite
+pnpm --filter web test:e2e
+
+# Run headed E2E test in visual browser window
+pnpm --filter web test:e2e:headed
+
+# Serve interactive Playwright HTML Web View Report at http://localhost:9323
+pnpm --filter web test:e2e:report
 ```
 
 ---
@@ -119,4 +135,3 @@ gphone/
 ## License
 
 This project is open-source and licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE).
-

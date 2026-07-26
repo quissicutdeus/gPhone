@@ -43,7 +43,7 @@
         subject: data.subject || "New Message",
         onClick: () => {
           visible = true;
-          openApp("mail");
+          openApp("mail", { mailId: data.id });
         },
       });
     } else if (action === "receiveMessage") {
@@ -59,33 +59,59 @@
         },
         onClick: () => {
           visible = true;
-          openApp("messages");
+          openApp("messages", {
+            conversationId: data.conversation_id,
+            phone: data.phone || data.senderPhone,
+          });
         },
       });
     } else if (action === "receiveContactShare" || action === "shareContact") {
-      toast.showContactShare({
-        name: `${data.firstname} ${data.lastname || ""}`.trim(),
-        phone: data.phone,
-        avatar: data.avatar,
-        onAccept: async () => {
-          await contacts.add({
-            firstname: data.firstname,
-            lastname: data.lastname || "",
-            phone: data.phone,
-            avatar: data.avatar,
-            favorite: false,
+      const handleAcceptContact = async () => {
+        const firstname = typeof data.firstname === "string" ? data.firstname.trim() : "";
+        const phone = typeof data.phone === "string" ? data.phone.trim() : "";
+
+        if (!firstname || !phone) {
+          toast.show({
+            type: "error",
+            message: "Cannot add contact: missing required name or phone number",
           });
+          return;
+        }
+
+        const payload = {
+          firstname,
+          lastname: typeof data.lastname === "string" ? data.lastname.trim() : "",
+          phone,
+          email: typeof data.email === "string" ? data.email.trim() : undefined,
+          avatar: typeof data.avatar === "string" ? data.avatar : undefined,
+          favorite: typeof data.favorite === "boolean" ? data.favorite : false,
+        };
+        try {
+          await contacts.add(payload);
           toast.show({
             type: "success",
             message: "Contact added to address book",
           });
-        },
+        } catch (e: any) {
+          toast.show({
+            type: "error",
+            message: e.message || "Failed to add contact",
+          });
+        }
+      };
+
+      toast.showContactShare({
+        name: `${data.firstname || ""} ${data.lastname || ""}`.trim() || data.phone || "Contact",
+        phone: data.phone || "",
+        avatar: data.avatar,
+        onAccept: handleAcceptContact,
         onDecline: () => {
           toast.show({
             type: "info",
             message: "Contact share declined",
           });
         },
+        onClick: handleAcceptContact,
       });
     } else if (action === "callStatus") {
       // { status: 'connected' | 'idle' | 'incoming', number: '...', name: '...' }

@@ -128,14 +128,16 @@ function createToastStore() {
             avatar?: string;
             onAccept: () => void | Promise<void>;
             onDecline?: () => void | Promise<void>;
+            onClick?: () => void | Promise<void>;
         }) => {
             soundService.play("notification");
             return show({
                 type: "contact",
                 title: "Contact Shared",
-                message: `${options.name} (${options.phone})`,
+                message: `${options.name}${options.phone ? ` (${options.phone})` : ""}`,
                 avatar: options.avatar,
                 duration: 10000,
+                onClick: options.onClick || options.onAccept,
                 actions: [
                     {
                         label: "Accept",

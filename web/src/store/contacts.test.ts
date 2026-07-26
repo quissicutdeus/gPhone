@@ -33,7 +33,7 @@ describe('contacts store', () => {
   });
 
   it('adds a new contact to store', async () => {
-    const newContactData = { name: 'Charlie', number: '555-0300' };
+    const newContactData = { firstname: 'Charlie', phone: '555-0300' };
     const createdContact = { id: 3, ...newContactData, favorite: false };
 
     vi.spyOn(fetchNuiModule, 'fetchNui').mockResolvedValue(createdContact as any);
@@ -41,6 +41,24 @@ describe('contacts store', () => {
     const result = await contacts.add(newContactData as any);
     expect(result).toEqual(createdContact);
     expect(get(contacts)).toContainEqual(createdContact);
+  });
+
+  it('rejects adding contact when mandatory firstname or phone is missing', async () => {
+    await expect(contacts.add({ firstname: '', phone: '555-0100' } as any)).rejects.toThrow(
+      'First name and phone number are required.'
+    );
+    await expect(contacts.add({ firstname: 'John', phone: '   ' } as any)).rejects.toThrow(
+      'First name and phone number are required.'
+    );
+  });
+
+  it('rejects sharing contact when mandatory firstname or phone is missing', async () => {
+    await expect(contacts.share({ firstname: '', phone: '555-0100' } as any)).rejects.toThrow(
+      'First name and phone number are required to share contact.'
+    );
+    await expect(contacts.share({ firstname: 'John', phone: '' } as any)).rejects.toThrow(
+      'First name and phone number are required to share contact.'
+    );
   });
 
   it('deletes a contact from store by id', async () => {
