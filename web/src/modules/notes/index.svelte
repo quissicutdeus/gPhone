@@ -3,7 +3,7 @@
     import Screen from "../../components/Screen.svelte";
     import { notes } from "../../store/notes";
     import type { Note } from "@shared/types";
-    import { marked } from "marked";
+    import { renderMarkdown } from "../../utils/markdown";
     import { fade } from "svelte/transition";
     import AddIcon from "../../components/icons/AddIcon.svelte";
     import EditIcon from "../../components/icons/EditIcon.svelte";
@@ -110,14 +110,6 @@
                 : selectedNote.title || "Untitled"
             : "Notes";
 
-    // Helper to render markdown safely
-    const renderMarkdown = (text: string) => {
-        try {
-            return marked.parse(text);
-        } catch (e) {
-            return text;
-        }
-    };
     const focus = (node: HTMLElement) => {
         node.focus();
     };
@@ -326,7 +318,9 @@
                         onclick={() => (selectedNote = note)}
                     >
                         <div class="flex flex-col w-full">
-                            <h3 class="font-bold text-lg text-yellow-500 truncate">
+                            <h3
+                                class="font-bold text-lg text-yellow-500 truncate"
+                            >
                                 {note.title || "Untitled"}
                             </h3>
                             <p class="text-sm text-gray-400 line-clamp-2 mt-1">
@@ -340,7 +334,9 @@
                 {/each}
                 {#if filteredNotes.length === 0}
                     <EmptyState
-                        title={searchQuery ? "No matching notes" : "No notes yet"}
+                        title={searchQuery
+                            ? "No matching notes"
+                            : "No notes yet"}
                     >
                         {#snippet icon()}
                             <DocumentIcon class="h-12 w-12" />

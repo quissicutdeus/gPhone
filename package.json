@@ -1,5 +1,6 @@
 {
   "name": "gphone",
+  "private": true,
   "version": "1.0.0",
   "description": "An open-source TypeScript phone for FiveM",
   "main": "index.js",
