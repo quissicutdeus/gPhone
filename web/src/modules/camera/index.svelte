@@ -148,6 +148,7 @@
                 <button
                     onclick={onback}
                     class="p-2.5 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 transition-colors"
+                    aria-label="Go back"
                 >
                     <CloseIcon class="h-5 w-5" />
                 </button>
@@ -173,7 +174,7 @@
                 <button
                     onclick={takePhoto}
                     class="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center p-1 hover:scale-105 active:scale-95 transition-transform shadow-2xl"
-                    aria-label="Take Photo"
+                    aria-label="Take photo"
                 >
                     <div
                         class="w-full h-full bg-white rounded-full transition-colors"

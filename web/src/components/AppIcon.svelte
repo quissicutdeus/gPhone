@@ -43,7 +43,11 @@
     <div
         class="w-14 h-14 rounded-2xl {color} flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 shadow-lg relative"
     >
-        <Icon />
+        {#if typeof Icon === "string"}
+            <img src={Icon} alt={name} class="w-8 h-8 object-contain" />
+        {:else if Icon}
+            <Icon />
+        {/if}
         {#if displayBadge > 0}
             <div
                 class="absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center px-1 border-2 border-gray-900 shadow-md"

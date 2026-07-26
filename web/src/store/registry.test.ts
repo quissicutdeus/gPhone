@@ -28,13 +28,43 @@ describe('App Registry Store', () => {
     expect(appRegistryStore.getComponent('crypto_app')).toBe(mockComponent);
   });
 
-  it('allows unregistering dynamic apps', () => {
-    appRegistryStore.unregisterApp('crypto_app');
+  it('prohibits unregistering built-in system apps', () => {
+    expect(() => appRegistryStore.unregisterApp('contacts')).toThrow(
+      "gPhone App Registry error: Unregistering system app 'contacts' is prohibited."
+    );
+  });
+
+  it('allows dynamic loading of remote ES module bundles via data URLs', async () => {
+    const mockAppCode = `
+      export const manifest = {
+        id: 'remote_marketplace',
+        name: 'Marketplace',
+        color: 'bg-emerald-600',
+        icon: 'https://example.com/icon.svg',
+      };
+      export const component = { type: 'MockRemoteComponent' };
+    `;
+    const dataUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(mockAppCode)}`;
+
+    const result = await appRegistryStore.loadRemoteApp(dataUrl);
+
+    expect(result.manifest.id).toBe('remote_marketplace');
+    expect(result.manifest.isRemote).toBe(true);
+    expect(result.manifest.bundleUrl).toBe(dataUrl);
 
     const apps = get(appRegistryStore);
-    const registered = apps.find((a) => a.id === 'crypto_app');
+    const installed = apps.find((a) => a.id === 'remote_marketplace');
+    expect(installed).toBeDefined();
+    expect(appRegistryStore.getComponent('remote_marketplace')).toBeDefined();
 
-    expect(registered).toBeUndefined();
-    expect(appRegistryStore.getComponent('crypto_app')).toBeUndefined();
+    // Clean up dynamic app
+    appRegistryStore.unregisterApp('remote_marketplace');
+  });
+
+  it('rejects loading remote apps with invalid URLs or missing manifests', async () => {
+    await expect(appRegistryStore.loadRemoteApp('')).rejects.toThrow(
+      'gPhone App Loader error: Remote app URL must be a valid string.'
+    );
   });
 });
+

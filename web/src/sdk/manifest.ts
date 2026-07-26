@@ -16,8 +16,8 @@ export interface AppManifest {
   name: string;
   /** Tailwind background color class or hex string for launcher icon badge */
   color: string;
-  /** Svelte component, snippet, or icon component representing the app icon */
-  icon: Snippet | any;
+  /** Svelte component, snippet, icon component, or image URL representing the app icon */
+  icon: Snippet | string | any;
   /** Optional reactive badge store for unread counts / notifications */
   badgeStore?: any;
   /** Semantic version string (e.g. "1.0.0") */
@@ -30,6 +30,10 @@ export interface AppManifest {
   permissions?: AppPermission[];
   /** Default props passed when launching app component */
   defaultProps?: Record<string, any>;
+  /** Flag indicating whether app was dynamically loaded from a remote bundle */
+  isRemote?: boolean;
+  /** Remote bundle URL if dynamically loaded */
+  bundleUrl?: string;
 }
 
 /**

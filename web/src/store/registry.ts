@@ -28,14 +28,54 @@ for (const path in manifestFiles) {
 export const registeredApps = loadedApps;
 export const registeredComponents = componentRegistry;
 
+const SYSTEM_APP_IDS = new Set(loadedApps.map((a) => a.id));
+const LOCAL_STORAGE_KEY = "gphone_installed_remote_apps";
+
+function getSavedRemoteAppUrls(): string[] {
+    if (typeof localStorage === "undefined") return [];
+    try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+}
+
+function saveRemoteAppUrl(url: string) {
+    if (typeof localStorage === "undefined") return;
+    try {
+        const current = getSavedRemoteAppUrls();
+        if (!current.includes(url)) {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([...current, url]));
+        }
+    } catch {
+        // Ignore localStorage quota/access errors
+    }
+}
+
+function removeSavedRemoteAppUrl(url: string) {
+    if (typeof localStorage === "undefined") return;
+    try {
+        const current = getSavedRemoteAppUrls();
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(current.filter((u) => u !== url)));
+    } catch {
+        // Ignore errors
+    }
+}
+
 // Reactive App Registry Store for Dynamic Community App Installation
 function createAppRegistry() {
     const { subscribe, update } = writable<AppManifest[]>(loadedApps);
 
-    return {
+    const store = {
         subscribe,
         registerApp: (manifest: AppManifest, component: any) => {
             const validatedManifest = defineApp(manifest);
+
+            if (SYSTEM_APP_IDS.has(validatedManifest.id) && !loadedApps.some((a) => a.id === validatedManifest.id)) {
+                throw new Error(`gPhone App Registry error: Overwriting system app '${validatedManifest.id}' is prohibited.`);
+            }
+
             componentRegistry[validatedManifest.id] = component;
             update((apps) => {
                 const existingIndex = apps.findIndex((a) => a.id === validatedManifest.id);
@@ -47,11 +87,90 @@ function createAppRegistry() {
             });
         },
         unregisterApp: (appId: string) => {
+            if (SYSTEM_APP_IDS.has(appId)) {
+                throw new Error(`gPhone App Registry error: Unregistering system app '${appId}' is prohibited.`);
+            }
+            const app = loadedApps.find((a) => a.id === appId);
+            if (app?.bundleUrl) {
+                removeSavedRemoteAppUrl(app.bundleUrl);
+            }
             delete componentRegistry[appId];
             update((apps) => apps.filter((a) => a.id !== appId));
         },
         getComponent: (appId: string) => componentRegistry[appId],
+        loadRemoteApp: async (url: string): Promise<{ manifest: AppManifest; component: any }> => {
+            if (!url || typeof url !== "string") {
+                throw new Error("gPhone App Loader error: Remote app URL must be a valid string.");
+            }
+
+            let loadedModule: any;
+            try {
+                // Try direct dynamic import
+                loadedModule = await import(/* @vite-ignore */ url);
+            } catch (directImportError) {
+                // CEF / Fallback: Fetch bundle code and import via data URL
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status} ${response.statusText}`);
+                    }
+                    const code = await response.text();
+                    const dataUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(code)}`;
+                    loadedModule = await import(/* @vite-ignore */ dataUrl);
+                } catch (fallbackError: any) {
+                    throw new Error(
+                        `gPhone Remote App Loader failed to load bundle from '${url}': ${(directImportError as any)?.message || fallbackError?.message}`
+                    );
+                }
+            }
+
+            const rawManifest =
+                loadedModule.manifest ||
+                loadedModule.default?.manifest ||
+                (loadedModule.default && typeof loadedModule.default === "object" && "id" in loadedModule.default
+                    ? loadedModule.default
+                    : null);
+
+            const component =
+                loadedModule.component ||
+                loadedModule.default?.component ||
+                (typeof loadedModule.default === "function" || typeof loadedModule.default === "object"
+                    ? loadedModule.default
+                    : null);
+
+            if (!rawManifest) {
+                throw new Error(`gPhone Remote App Loader error: Module at '${url}' does not export a valid 'manifest'.`);
+            }
+
+            if (!component) {
+                throw new Error(`gPhone Remote App Loader error: Module at '${url}' does not export a valid Svelte 'component'.`);
+            }
+
+            const validatedManifest = defineApp({
+                ...rawManifest,
+                isRemote: true,
+                bundleUrl: url,
+            });
+
+            store.registerApp(validatedManifest, component);
+            saveRemoteAppUrl(url);
+
+            return { manifest: validatedManifest, component };
+        },
     };
+
+    // Rehydrate saved remote apps on startup if running in browser/client environment
+    if (typeof window !== "undefined") {
+        const savedUrls = getSavedRemoteAppUrls();
+        for (const url of savedUrls) {
+            store.loadRemoteApp(url).catch((err) => {
+                console.warn(`gPhone Registry failed to re-hydrate remote app from '${url}':`, err);
+            });
+        }
+    }
+
+    return store;
 }
 
 export const appRegistryStore = createAppRegistry();
+

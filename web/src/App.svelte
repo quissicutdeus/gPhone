@@ -7,7 +7,7 @@
   import { callStore } from "./store/call";
   import { isTakingPhoto } from "./store/camera";
   import PhoneFrame from "./components/PhoneFrame.svelte";
-  import { registeredComponents } from "./store/registry";
+  import { appRegistryStore } from "./store/registry";
   import Home from "./components/Home.svelte";
   import { fetchNui } from "./utils/fetchNui";
   import { mailStore } from "./store/mail";
@@ -17,9 +17,6 @@
   import { bootstrapStores } from "./store/bootstrap";
   import ToastContainer from "./components/ToastContainer.svelte";
   import ErrorBoundary from "./components/ErrorBoundary.svelte";
-
-  const components: Record<string, any> = { ...registeredComponents };
-  components["home"] = Home;
 
   let visible = $state(false);
 
@@ -36,6 +33,35 @@
     } else if (action === "setCharge") {
       if (typeof data === "number") {
         charge.set(data);
+      }
+    } else if (action === "installApp" || action === "gphone:installApp") {
+      if (data?.url) {
+        appRegistryStore.loadRemoteApp(data.url).then(({ manifest }) => {
+          toast.show({
+            type: "success",
+            message: `App '${manifest.name}' installed successfully`,
+          });
+        }).catch((err) => {
+          toast.show({
+            type: "error",
+            message: err.message || "Failed to install remote app",
+          });
+        });
+      }
+    } else if (action === "uninstallApp" || action === "gphone:uninstallApp") {
+      if (data?.appId) {
+        try {
+          appRegistryStore.unregisterApp(data.appId);
+          toast.show({
+            type: "info",
+            message: "App uninstalled",
+          });
+        } catch (err: any) {
+          toast.show({
+            type: "error",
+            message: err.message || "Failed to uninstall app",
+          });
+        }
       }
     } else if (action === "receiveMail") {
       mailStore.addReceivedMail(data);
@@ -276,10 +302,9 @@
     >
       <ToastContainer />
       {#if $currentApp.name === "home"}
-        {@const HomeComponent = components["home"]}
-        <HomeComponent {openApp} {closePhone} />
-      {:else if components[$currentApp.name]}
-        {@const ActiveComponent = components[$currentApp.name]}
+        <Home {openApp} />
+      {:else if appRegistryStore.getComponent($currentApp.name)}
+        {@const ActiveComponent = appRegistryStore.getComponent($currentApp.name)}
         {#key $currentApp.name}
           <ErrorBoundary appName={$currentApp.name}>
             <ActiveComponent onback={goHome} {...$currentApp.props} />

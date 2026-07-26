@@ -5,6 +5,9 @@ import { photos } from "../store/photos";
 import { fetchNui } from "../utils/fetchNui";
 import { useNuiEvent } from "../utils/useNuiEvent";
 
+import { appRegistryStore } from "../store/registry";
+import type { AppManifest } from "./manifest";
+
 /**
  * Executes a callback when the application component mounts into the gPhone OS shell.
  */
@@ -98,3 +101,16 @@ export function useNuiBridge() {
     useNuiEvent,
   };
 }
+
+/**
+ * OS Service Hook for dynamic app registry & remote app installation.
+ */
+export function useAppRegistry() {
+  return {
+    registryStore: appRegistryStore,
+    loadRemoteApp: (url: string) => appRegistryStore.loadRemoteApp(url),
+    registerApp: (manifest: AppManifest, component: any) => appRegistryStore.registerApp(manifest, component),
+    unregisterApp: (appId: string) => appRegistryStore.unregisterApp(appId),
+  };
+}
+
