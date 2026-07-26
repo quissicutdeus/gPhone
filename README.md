@@ -27,8 +27,10 @@
 - **Settings & Status**: Dynamic battery drain lifecycle with dead phone states, custom wallpaper support, and audio toggles.
 
 ### 🛠️ Backend & Core Architecture
-- **App Isolation & Error Boundaries**: Per-app Svelte 5 `<svelte:boundary>` wrappers preventing third-party app runtime exceptions from locking FiveM NUI mouse focus or breaking OS navigation.
-- **Dual-Runtime Transport Abstraction**: Pluggable `ITransportAdapter` layer (`NuiTransportAdapter`, `MockTransportAdapter`) cleanly separating FiveM CEF callbacks from browser mock engines.
+- **Third-Party App SDK (`@gphone/sdk`)**: Type-safe app builder (`defineApp`), lifecycle hooks (`onAppMount`, `onAppUnmount`), OS service accessors (`usePhoneNotification`, `useContacts`, `useCamera`, `useNuiBridge`, `useAppRegistry`), and dynamic ES module remote bundle loader (`loadRemoteApp`).
+- **App Isolation & Guardrails**: Wrapped dynamic app rendering with Svelte 5 `<svelte:boundary>` (`ErrorBoundary.svelte`) preventing third-party app runtime exceptions from locking FiveM NUI mouse focus or breaking OS navigation.
+- **Dual-Runtime Transport Abstraction**: Pluggable `ITransportAdapter` layer (`NuiTransportAdapter`, `MockTransportAdapter`, `WebSocketTransportAdapter`) cleanly separating FiveM CEF callbacks from browser mock engines and external WebSocket device sync.
+- **Interactive Browser Mock DevTools & Volume HUD**: Floating developer control panel (`MockDevTools.svelte`) for standalone browser testing (power button, volume HUD overlay, battery drain, signal levels, call/SMS/email simulation).
 - **Dynamic App Registry**: Reactive `appRegistryStore` supporting runtime third-party app registration (`registerApp`, `unregisterApp`) and home screen grid updates.
 - **Framework Bridge**: Built-in support for **QBX Core** (`qbx_core`) and **QBCore** (`qb-core`) with automatic player lookup and money handlers.
 - **Inventory Integration**: Out-of-the-box support for `ox_inventory` item registration and removal.
@@ -39,8 +41,8 @@
 
 ## Tech Stack
 
-- **Frontend**: [Svelte 5](https://svelte.dev/), [Vite](https://vitejs.dev/), [Tailwind CSS v4](https://tailwindcss.com/), [TypeScript](https://www.typescriptlang.org/)
-- **Backend (Client/Server)**: TypeScript compiled via high-performance `esbuild` pipeline
+- **Frontend**: [Svelte 5](https://svelte.dev/), [Vite](https://vitejs.dev/), [Tailwind CSS v4](https://tailwindcss.com/), [TypeScript 6](https://www.typescriptlang.org/)
+- **Backend (Client/Server)**: TypeScript 7 compiled via high-performance `esbuild` pipeline (8–12x typecheck speedup)
 - **Database**: MySQL / MariaDB via `oxmysql` with foreign keys, compound indexes, and status moderation
 - **Package Manager**: `pnpm` Workspaces
 
