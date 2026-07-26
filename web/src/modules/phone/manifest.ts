@@ -1,8 +1,11 @@
 import Icon from "./Icon.svelte";
+import { defineApp } from "../../sdk";
 
-export default {
+export default defineApp({
     id: "phone",
     name: "Phone",
     color: "bg-green-500",
-    icon: Icon
-};
+    icon: Icon,
+    description: "Make phone calls and view call history",
+    permissions: ["contacts", "notifications"],
+});

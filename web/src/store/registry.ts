@@ -1,15 +1,7 @@
 import { writable } from "svelte/store";
-import type { Snippet } from "svelte";
+import { type AppManifest, defineApp } from "../sdk";
 
-export interface AppManifest {
-    id: string;
-    name: string;
-    color: string;
-    icon: Snippet | any; // Svelte component or snippet
-    badgeStore?: any;
-    version?: string;
-    author?: string;
-}
+export type { AppManifest } from "../sdk";
 
 // Glob all manifest.ts files in ../modules/
 const manifestFiles = import.meta.glob("../modules/*/manifest.ts", { eager: true });
@@ -20,8 +12,9 @@ const loadedApps: AppManifest[] = [];
 const componentRegistry: Record<string, any> = {};
 
 for (const path in manifestFiles) {
-    const manifest = (manifestFiles[path] as any).default as AppManifest;
-    if (manifest && manifest.id) {
+    const rawManifest = (manifestFiles[path] as any).default as AppManifest;
+    if (rawManifest && rawManifest.id) {
+        const manifest = defineApp(rawManifest);
         loadedApps.push(manifest);
 
         // Find corresponding component
@@ -42,15 +35,15 @@ function createAppRegistry() {
     return {
         subscribe,
         registerApp: (manifest: AppManifest, component: any) => {
-            if (!manifest.id) return;
-            componentRegistry[manifest.id] = component;
+            const validatedManifest = defineApp(manifest);
+            componentRegistry[validatedManifest.id] = component;
             update((apps) => {
-                const existingIndex = apps.findIndex((a) => a.id === manifest.id);
+                const existingIndex = apps.findIndex((a) => a.id === validatedManifest.id);
                 if (existingIndex >= 0) {
-                    apps[existingIndex] = manifest;
+                    apps[existingIndex] = validatedManifest;
                     return [...apps];
                 }
-                return [...apps, manifest];
+                return [...apps, validatedManifest];
             });
         },
         unregisterApp: (appId: string) => {

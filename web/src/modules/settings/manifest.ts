@@ -1,8 +1,10 @@
 import Icon from "./Icon.svelte";
+import { defineApp } from "../../sdk";
 
-export default {
+export default defineApp({
     id: "settings",
     name: "Settings",
     color: "bg-gray-700",
-    icon: Icon
-};
+    icon: Icon,
+    description: "Configure phone settings, wallpapers, and preferences",
+});

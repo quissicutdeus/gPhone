@@ -1,0 +1,54 @@
+import type { Snippet } from "svelte";
+
+export type AppPermission =
+  | "notifications"
+  | "contacts"
+  | "camera"
+  | "media"
+  | "storage"
+  | "location"
+  | "network";
+
+export interface AppManifest {
+  /** Unique ID for the application (e.g., "contacts", "crypto_tracker") */
+  id: string;
+  /** Human-readable display name on home screen */
+  name: string;
+  /** Tailwind background color class or hex string for launcher icon badge */
+  color: string;
+  /** Svelte component, snippet, or icon component representing the app icon */
+  icon: Snippet | any;
+  /** Optional reactive badge store for unread counts / notifications */
+  badgeStore?: any;
+  /** Semantic version string (e.g. "1.0.0") */
+  version?: string;
+  /** App author or developer team */
+  author?: string;
+  /** Brief description of app functionality */
+  description?: string;
+  /** Declared platform permissions required by app */
+  permissions?: AppPermission[];
+  /** Default props passed when launching app component */
+  defaultProps?: Record<string, any>;
+}
+
+/**
+ * Helper function to define and validate a gPhone application manifest.
+ * Ensures required fields exist and applies sensible defaults for third-party apps.
+ */
+export function defineApp(manifest: AppManifest): AppManifest {
+  if (!manifest.id || typeof manifest.id !== "string") {
+    throw new Error("gPhone App Manifest error: 'id' is required and must be a string.");
+  }
+  if (!manifest.name || typeof manifest.name !== "string") {
+    throw new Error("gPhone App Manifest error: 'name' is required and must be a string.");
+  }
+
+  return {
+    version: "1.0.0",
+    author: "Community",
+    permissions: [],
+    defaultProps: {},
+    ...manifest,
+  };
+}
