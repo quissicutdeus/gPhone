@@ -1,6 +1,6 @@
 <script lang="ts">
     import AppIcon from "./AppIcon.svelte";
-    import { registeredApps } from "../store/registry";
+    import { appRegistryStore } from "../store/registry";
 
     let { openApp } = $props();
 </script>
@@ -11,7 +11,7 @@
     <h1 class="mb-8 text-4xl font-bold tracking-tight">gphone</h1>
 
     <div class="grid grid-cols-4 gap-4 w-full px-4">
-        {#each registeredApps as app}
+        {#each $appRegistryStore as app}
             <AppIcon
                 name={app.name}
                 color={app.color}

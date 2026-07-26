@@ -27,6 +27,9 @@
 - **Settings & Status**: Dynamic battery drain lifecycle with dead phone states, custom wallpaper support, and audio toggles.
 
 ### 🛠️ Backend & Core Architecture
+- **App Isolation & Error Boundaries**: Per-app Svelte 5 `<svelte:boundary>` wrappers preventing third-party app runtime exceptions from locking FiveM NUI mouse focus or breaking OS navigation.
+- **Dual-Runtime Transport Abstraction**: Pluggable `ITransportAdapter` layer (`NuiTransportAdapter`, `MockTransportAdapter`) cleanly separating FiveM CEF callbacks from browser mock engines.
+- **Dynamic App Registry**: Reactive `appRegistryStore` supporting runtime third-party app registration (`registerApp`, `unregisterApp`) and home screen grid updates.
 - **Framework Bridge**: Built-in support for **QBX Core** (`qbx_core`) and **QBCore** (`qb-core`) with automatic player lookup and money handlers.
 - **Inventory Integration**: Out-of-the-box support for `ox_inventory` item registration and removal.
 - **Central Audit Logging**: Comprehensive action auditing (`gphone_audit_logs`) tracking archive, deletion, moderation, and participant events.

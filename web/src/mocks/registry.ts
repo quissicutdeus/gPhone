@@ -237,3 +237,9 @@ export async function getMockData(eventName: string, data?: any): Promise<any> {
     console.warn(`[MockRegistry] No handler found for event: ${eventName}`);
     return null;
 }
+
+export const MockRegistry = {
+    has: (eventName: string) => Boolean(mockRegistry[eventName]),
+    handle: (eventName: string, data?: any) => getMockData(eventName, data),
+};
+

@@ -11,7 +11,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@shared': path.resolve(__dirname, '../shared')
-    }
+    },
+    conditions: ['browser']
   },
   build: {
     outDir: '../dist/web',

@@ -1,3 +1,4 @@
+import { writable } from "svelte/store";
 import type { Snippet } from "svelte";
 
 export interface AppManifest {
@@ -6,6 +7,8 @@ export interface AppManifest {
     color: string;
     icon: Snippet | any; // Svelte component or snippet
     badgeStore?: any;
+    version?: string;
+    author?: string;
 }
 
 // Glob all manifest.ts files in ../modules/
@@ -22,8 +25,6 @@ for (const path in manifestFiles) {
         loadedApps.push(manifest);
 
         // Find corresponding component
-        // Assuming path is ../modules/[appId]/manifest.ts
-        // And component is ../modules/[appId]/index.svelte
         const componentPath = path.replace("manifest.ts", "index.svelte");
         if (appComponents[componentPath]) {
             componentRegistry[manifest.id] = (appComponents[componentPath] as any).default;
@@ -33,3 +34,31 @@ for (const path in manifestFiles) {
 
 export const registeredApps = loadedApps;
 export const registeredComponents = componentRegistry;
+
+// Reactive App Registry Store for Dynamic Community App Installation
+function createAppRegistry() {
+    const { subscribe, update } = writable<AppManifest[]>(loadedApps);
+
+    return {
+        subscribe,
+        registerApp: (manifest: AppManifest, component: any) => {
+            if (!manifest.id) return;
+            componentRegistry[manifest.id] = component;
+            update((apps) => {
+                const existingIndex = apps.findIndex((a) => a.id === manifest.id);
+                if (existingIndex >= 0) {
+                    apps[existingIndex] = manifest;
+                    return [...apps];
+                }
+                return [...apps, manifest];
+            });
+        },
+        unregisterApp: (appId: string) => {
+            delete componentRegistry[appId];
+            update((apps) => apps.filter((a) => a.id !== appId));
+        },
+        getComponent: (appId: string) => componentRegistry[appId],
+    };
+}
+
+export const appRegistryStore = createAppRegistry();

@@ -16,6 +16,7 @@
   import { toast } from "./store/toast";
   import { bootstrapStores } from "./store/bootstrap";
   import ToastContainer from "./components/ToastContainer.svelte";
+  import ErrorBoundary from "./components/ErrorBoundary.svelte";
 
   const components: Record<string, any> = { ...registeredComponents };
   components["home"] = Home;
@@ -279,7 +280,11 @@
         <HomeComponent {openApp} {closePhone} />
       {:else if components[$currentApp.name]}
         {@const ActiveComponent = components[$currentApp.name]}
-        <ActiveComponent onback={goHome} {...$currentApp.props} />
+        {#key $currentApp.name}
+          <ErrorBoundary appName={$currentApp.name}>
+            <ActiveComponent onback={goHome} {...$currentApp.props} />
+          </ErrorBoundary>
+        {/key}
       {/if}
     </PhoneFrame>
   </main>

@@ -20,15 +20,18 @@ This directory contains the Svelte 5 frontend application and NUI bridge for **[
 web/
 ├── e2e/                # Playwright End-to-End test suites
 │   ├── apps/           # Individual app E2E tests (Phone, Mail, Messages, Contacts, etc.)
+│   ├── error_boundary.spec.ts
 │   ├── navigation.spec.ts
 │   ├── notifications.spec.ts
 │   └── nui.spec.ts
 ├── src/
-│   ├── components/     # Core OS UI components (PhoneFrame, ScreenHeader, ToastContainer)
+│   ├── components/     # Core OS UI components (PhoneFrame, ErrorBoundary, ScreenHeader, ToastContainer)
+│   ├── core/           # Core OS architecture & bridge adapters
+│   │   └── bridge/     # Transport abstraction layer (NuiTransportAdapter, MockTransportAdapter)
 │   ├── mocks/          # Standalone browser mode data mocks
 │   ├── modules/        # Phone application modules (phone, contacts, messages, mail, etc.)
-│   ├── store/          # Svelte state stores (contacts, mail, toast, settings, etc.)
-│   ├── App.svelte      # Main OS runtime container & NUI message router
+│   ├── store/          # Svelte state stores & reactive appRegistryStore
+│   ├── App.svelte      # Main OS runtime container & ErrorBoundary wrapper
 │   └── main.ts
 ├── package.json
 └── playwright.config.ts
@@ -42,7 +45,7 @@ gPhone includes a full suite of automated unit and Playwright End-to-End (E2E) t
 
 ### Running Unit Tests
 
-Run unit test suites for Svelte stores and helper utilities:
+Run unit test suites for Svelte stores, transport bridge adapters, and helper utilities:
 
 ```sh
 pnpm test:unit
@@ -50,7 +53,7 @@ pnpm test:unit
 
 ### Running E2E Tests
 
-The Playwright test suite covers full application flows, NUI events, interactive notification deep-linking, and form validation.
+The Playwright test suite covers full application flows, NUI events, app error boundaries, interactive notification deep-linking, and form validation.
 
 ```sh
 # Run full headless E2E test suite
@@ -68,7 +71,9 @@ pnpm test:e2e:report
 
 ---
 
-## 🛠️ Standalone Development vs. FiveM CEF
+## 🛠️ Standalone Development vs. FiveM CEF (Pluggable Transport Layer)
 
-- **Standalone Browser Mode**: Running `pnpm dev` launches the web app on `http://localhost:5173`. NUI callbacks fall back gracefully to local mock data.
-- **FiveM CEF NUI Mode**: When compiled and loaded inside FiveM, NUI messages pass via `window.dispatchEvent(new MessageEvent('message', ...))` and client callbacks execute via `fetchNui`.
+gPhone uses a pluggable `ITransportAdapter` abstraction layer to handle event communication across runtime environments:
+
+- **Standalone Browser Mode (`MockTransportAdapter`)**: Running `pnpm dev` launches the web app on `http://localhost:5173`. Callbacks dynamically resolve from `MockRegistry` data fixtures.
+- **FiveM CEF NUI Mode (`NuiTransportAdapter`)**: Inside FiveM, callbacks issue `fetch('https://<resource>/<event>')` requests and handle incoming NUI `window.message` events seamlessly.
