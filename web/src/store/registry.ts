@@ -1,7 +1,7 @@
 import { writable } from "svelte/store";
-import { type AppManifest, defineApp } from "../sdk";
+import { type AppManifest, defineApp } from "@gphone/sdk";
 
-export type { AppManifest } from "../sdk";
+export type { AppManifest } from "@gphone/sdk";
 
 // Glob all manifest.ts files in ../modules/
 const manifestFiles = import.meta.glob("../modules/*/manifest.ts", { eager: true });

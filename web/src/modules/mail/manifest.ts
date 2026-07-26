@@ -1,6 +1,6 @@
 import Icon from "./Icon.svelte";
 import { unreadMailCount } from "../../store/mail";
-import { defineApp } from "../../sdk";
+import { defineApp } from "@gphone/sdk";
 
 export default defineApp({
     id: "mail",

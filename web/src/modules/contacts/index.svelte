@@ -1,15 +1,16 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import { fetchNui } from "../../utils/fetchNui";
     import type { Contact } from "@shared/types";
+    import {
+        useContacts,
+        useCamera,
+        usePhoneNotification,
+        useNuiBridge,
+        onAppMount,
+    } from "../../sdk";
     import { callStore } from "../../store/call";
     import { openApp } from "../../store/navigation";
     import Screen from "../../components/Screen.svelte";
-    import {
-        contacts,
-        favoriteContacts,
-        contacts as contactsStore,
-    } from "../../store/contacts";
+    import { favoriteContacts } from "../../store/contacts";
     import AddIcon from "../../components/icons/AddIcon.svelte";
     import StarIcon from "../../components/icons/StarIcon.svelte";
     import PhoneIcon from "../../components/icons/PhoneIcon.svelte";
@@ -20,7 +21,6 @@
     import Avatar from "../../components/Avatar.svelte";
     import ListItem from "../../components/ListItem.svelte";
     import Button from "../../components/Button.svelte";
-    import { photos } from "../../store/photos";
     import CloseIcon from "../../components/icons/CloseIcon.svelte";
     import SearchIcon from "../../components/icons/SearchIcon.svelte";
     import SearchBar from "../../components/SearchBar.svelte";
@@ -30,12 +30,18 @@
     import { useScrollDetect } from "../../utils/useScrollDetect";
     import FloatingActionButton from "../../components/FloatingActionButton.svelte";
     import PhotoPickerModal from "../../components/PhotoPickerModal.svelte";
-    import { toast } from "../../store/toast";
 
     let { onback } = $props();
 
+    const { contactsStore } = useContacts();
+    const { photosStore: photos } = useCamera();
+    const { sendNotification, toast } = usePhoneNotification();
+    const { fetchNui } = useNuiBridge();
+
+    const contacts = contactsStore;
+
     // Derive other contacts from the main store
-    let otherContacts = $derived($contacts.filter((c) => !c.favorite));
+    let otherContacts = $derived($contacts.filter((c: Contact) => !c.favorite));
     let isAdding = $state(false);
 
     // New Contact Form State
@@ -182,7 +188,10 @@
 
     const updateContact = async () => {
         if (!selectedContact) return;
-        if (!selectedContact.firstname.trim() || !selectedContact.phone.trim()) {
+        if (
+            !selectedContact.firstname.trim() ||
+            !selectedContact.phone.trim()
+        ) {
             toast.show({
                 type: "error",
                 message: "First name and phone number are required.",
@@ -194,7 +203,9 @@
             const payload = {
                 id: selectedContact.id, // ID is required for update in ServerApp
                 firstname: selectedContact.firstname.trim(),
-                lastname: selectedContact.lastname ? selectedContact.lastname.trim() : "",
+                lastname: selectedContact.lastname
+                    ? selectedContact.lastname.trim()
+                    : "",
                 phone: selectedContact.phone.trim(),
                 favorite: selectedContact.favorite,
                 avatar: selectedContact.avatar,
@@ -236,10 +247,14 @@
 
     const shareContact = async () => {
         if (!selectedContact) return;
-        if (!selectedContact.firstname.trim() || !selectedContact.phone.trim()) {
+        if (
+            !selectedContact.firstname.trim() ||
+            !selectedContact.phone.trim()
+        ) {
             toast.show({
                 type: "error",
-                message: "First name and phone number are required to share contact.",
+                message:
+                    "First name and phone number are required to share contact.",
             });
             return;
         }
@@ -264,7 +279,7 @@
         }
     };
 
-    onMount(() => {
+    onAppMount(() => {
         contactsStore.load();
         messagesStore.loadConversations();
     });
@@ -390,7 +405,12 @@
                     >
                         Cancel
                     </Button>
-                    <Button class="flex-1 text-xs" onclick={addContact} disabled={!newContact.firstname.trim() || !newContact.phone.trim()}>
+                    <Button
+                        class="flex-1 text-xs"
+                        onclick={addContact}
+                        disabled={!newContact.firstname.trim() ||
+                            !newContact.phone.trim()}
+                    >
                         Save Contact
                     </Button>
                 </div>
@@ -547,7 +567,8 @@
                     variant="icon"
                     class="bg-gray-700 hover:bg-gray-600 text-white hover:text-white"
                     onclick={shareContact}
-                    disabled={!selectedContact?.firstname?.trim() || !selectedContact?.phone?.trim()}
+                    disabled={!selectedContact?.firstname?.trim() ||
+                        !selectedContact?.phone?.trim()}
                     aria-label="Share"
                 >
                     <!-- Share Icon -->
@@ -599,7 +620,12 @@
                             />
                             <span>Favorite</span>
                         </label>
-                        <Button class="w-full" onclick={updateContact} disabled={!selectedContact.firstname.trim() || !selectedContact.phone.trim()}>
+                        <Button
+                            class="w-full"
+                            onclick={updateContact}
+                            disabled={!selectedContact.firstname.trim() ||
+                                !selectedContact.phone.trim()}
+                        >
                             Save Changes
                         </Button>
                     </div>

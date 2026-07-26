@@ -10,7 +10,8 @@ export default defineConfig({
   base: './',
   resolve: {
     alias: {
-      '@shared': path.resolve(__dirname, '../shared')
+      '@shared': path.resolve(__dirname, '../shared'),
+      '@gphone/sdk': path.resolve(__dirname, './src/sdk/index.ts')
     },
     conditions: ['browser']
   },

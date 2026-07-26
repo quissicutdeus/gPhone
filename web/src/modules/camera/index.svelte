@@ -1,11 +1,13 @@
 <script lang="ts">
     import { isTakingPhoto } from "../../store/camera";
-    import { fetchNui } from "../../utils/fetchNui";
-    import { photos } from "../../store/photos";
+    import { useCamera, useNuiBridge } from "../../sdk";
     import CloseIcon from "../../components/icons/CloseIcon.svelte";
     import ChevronLeftIcon from "../../components/icons/ChevronLeftIcon.svelte";
 
     let { onback } = $props<{ onback: () => void }>();
+
+    const { capturePhoto } = useCamera();
+    const { fetchNui } = useNuiBridge();
 
     let photoUri = $state<string | null>(null);
 
@@ -77,14 +79,14 @@
 
                         // Set the photo URI to the cropped image
                         photoUri = canvas.toDataURL("image/jpeg", 0.5);
-                        await photos.add({ image: photoUri });
+                        await capturePhoto(photoUri);
                     } else {
                         photoUri = base64Data; // fallback
-                        await photos.add({ image: photoUri });
+                        await capturePhoto(photoUri);
                     }
                 } else {
                     photoUri = base64Data;
-                    await photos.add({ image: photoUri });
+                    await capturePhoto(photoUri);
                 }
             } catch (err) {
                 console.error("Failed to take photo", err);
@@ -93,65 +95,91 @@
             }
         }, 50);
     };
-
-    const closePhoto = () => {
-        photoUri = null;
-    };
-
-    const handleKeydown = (e: KeyboardEvent) => {
-        if (e.key === "Enter" && !photoUri && !$isTakingPhoto) {
-            e.preventDefault();
-            takePhoto();
-        }
-    };
 </script>
-
-<svelte:window onkeydown={handleKeydown} />
 
 <div
     bind:this={containerRef}
-    class="relative flex h-full w-full flex-col bg-transparent"
+    class="flex flex-col h-full bg-black text-white relative select-none"
 >
     {#if photoUri}
-        <!-- Photo Preview Area -->
-        <div class="absolute inset-0 z-50 bg-black">
-            <!-- svelte-ignore a11y_missing_attribute -->
-            <img class="h-full w-full object-contain" src={photoUri} />
+        <!-- Photo Preview Screen -->
+        <div class="relative flex-1 bg-black flex items-center justify-center">
+            <img
+                src={photoUri}
+                alt="Captured preview"
+                class="w-full h-full object-cover"
+            />
 
-            <button
-                class="absolute left-4 top-12 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
-                onclick={closePhoto}
-                aria-label="Close photo"
+            <!-- Top bar -->
+            <div
+                class="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent"
             >
-                <CloseIcon />
-            </button>
+                <button
+                    onclick={() => (photoUri = null)}
+                    class="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+                >
+                    <ChevronLeftIcon class="h-6 w-6" />
+                </button>
+            </div>
+
+            <!-- Bottom Action Bar -->
+            <div
+                class="absolute bottom-0 left-0 right-0 p-6 flex justify-around items-center bg-gradient-to-t from-black/80 to-transparent pb-10"
+            >
+                <button
+                    onclick={() => (photoUri = null)}
+                    class="px-6 py-2.5 rounded-full bg-gray-800 text-white font-medium hover:bg-gray-700 transition-colors text-sm"
+                >
+                    Retake
+                </button>
+                <button
+                    onclick={onback}
+                    class="px-6 py-2.5 rounded-full bg-yellow-500 text-black font-semibold hover:bg-yellow-400 transition-colors text-sm shadow-lg shadow-yellow-500/20"
+                >
+                    Use Photo
+                </button>
+            </div>
+        </div>
+    {:else}
+        <!-- Live Viewfinder / Camera View -->
+        <div class="flex-1 relative flex flex-col justify-between p-4">
+            <!-- Top Controls -->
+            <div class="flex justify-between items-center z-10 pt-2">
+                <button
+                    onclick={onback}
+                    class="p-2.5 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 transition-colors"
+                >
+                    <CloseIcon class="h-5 w-5" />
+                </button>
+            </div>
+
+            <!-- Grid Overlay Guide -->
+            <div
+                class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-20"
+            >
+                <div class="border-r border-b border-white"></div>
+                <div class="border-r border-b border-white"></div>
+                <div class="border-b border-white"></div>
+                <div class="border-r border-b border-white"></div>
+                <div class="border-r border-b border-white"></div>
+                <div class="border-b border-white"></div>
+                <div class="border-r border-white"></div>
+                <div class="border-r border-white"></div>
+                <div></div>
+            </div>
+
+            <!-- Bottom Controls / Shutter Button -->
+            <div class="flex justify-center items-center pb-8 z-10 relative">
+                <button
+                    onclick={takePhoto}
+                    class="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center p-1 hover:scale-105 active:scale-95 transition-transform shadow-2xl"
+                    aria-label="Take Photo"
+                >
+                    <div
+                        class="w-full h-full bg-white rounded-full transition-colors"
+                    ></div>
+                </button>
+            </div>
         </div>
     {/if}
-
-    <!-- Top Bar (Back button, Flash toggle etc might go here) -->
-    <div class="flex items-center justify-between p-4 pt-12">
-        <button
-            class="text-white hover:text-gray-300"
-            onclick={onback}
-            aria-label="Go back"
-        >
-            <ChevronLeftIcon />
-        </button>
-    </div>
-
-    <!-- Empty Middle Viewfinder Area (transparent to show game) -->
-    <div class="flex-1"></div>
-
-    <!-- Bottom Controls -->
-    <div
-        class="flex items-center justify-center bg-black/40 pb-12 pt-6 backdrop-blur-md"
-    >
-        <button
-            class="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-transparent transition-transform hover:scale-105 active:scale-95"
-            onclick={takePhoto}
-            aria-label="Take photo"
-        >
-            <div class="h-16 w-16 rounded-full bg-white"></div>
-        </button>
-    </div>
 </div>

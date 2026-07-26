@@ -1,7 +1,6 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import Screen from "../../components/Screen.svelte";
-    import { photos } from "../../store/photos";
+    import { useCamera, onAppMount } from "../../sdk";
     import type { Photo } from "@shared/types";
     import { fade } from "svelte/transition";
     import ShareSquareIcon from "../../components/icons/ShareSquareIcon.svelte";
@@ -13,14 +12,16 @@
 
     let { onback } = $props();
 
+    const { photosStore, deletePhoto } = useCamera();
+
     let selectedPhoto: Photo | null = $state(null);
     let isSelectionMode = $state(false);
     let selectedIds = $state<Set<number>>(new Set());
     let isLoading = $state(false);
     let showDeleteConfirm = $state(false);
 
-    onMount(() => {
-        photos.load();
+    onAppMount(() => {
+        photosStore.load();
     });
 
     const toggleSelectionMode = () => {
@@ -30,19 +31,14 @@
         }
     };
 
-    const toggleSelect = (id: number) => {
-        if (selectedIds.has(id)) {
-            selectedIds.delete(id);
-        } else {
-            selectedIds.add(id);
-        }
-        // Force reactivity for Set
-        selectedIds = new Set(selectedIds);
-    };
-
     const handlePhotoClick = (photo: Photo) => {
         if (isSelectionMode) {
-            toggleSelect(photo.id);
+            if (selectedIds.has(photo.id)) {
+                selectedIds.delete(photo.id);
+            } else {
+                selectedIds.add(photo.id);
+            }
+            selectedIds = new Set(selectedIds); // Trigger reactivity
         } else {
             selectedPhoto = photo;
         }
@@ -52,7 +48,7 @@
         isLoading = true;
         try {
             for (const id of Array.from(selectedIds)) {
-                await photos.delete(id);
+                await deletePhoto(id);
             }
             selectedIds.clear();
             isSelectionMode = false;
@@ -76,7 +72,7 @@
         if (!selectedPhoto) return;
         isLoading = true;
         try {
-            await photos.delete(selectedPhoto.id);
+            await deletePhoto(selectedPhoto.id);
             selectedPhoto = null;
             showDeleteConfirm = false;
         } catch (e) {
@@ -85,7 +81,7 @@
             isLoading = false;
         }
     };
-    
+
     const goBack = () => {
         if (selectedPhoto) {
             selectedPhoto = null;
@@ -106,7 +102,11 @@
     {/if}
 {/snippet}
 
-<Screen title={selectedPhoto ? "Photo" : "Photos"} onback={goBack} actions={headerActions}>
+<Screen
+    title={selectedPhoto ? "Photo" : "Photos"}
+    onback={goBack}
+    actions={headerActions}
+>
     {#if selectedPhoto}
         <!-- Full Screen Image View -->
         <div class="flex flex-col h-full bg-black relative" transition:fade>
@@ -117,8 +117,10 @@
                     class="w-full h-full object-contain"
                 />
             </div>
-            
-            <div class="p-4 flex justify-between bg-black/80 backdrop-blur pb-8 border-t border-gray-800">
+
+            <div
+                class="p-4 flex justify-between bg-black/80 backdrop-blur pb-8 border-t border-gray-800"
+            >
                 <button
                     class="p-2 text-blue-400 hover:text-blue-300 transition-colors"
                     aria-label="Share photo"
@@ -151,8 +153,10 @@
         </div>
     {:else}
         <!-- Grid View -->
-        <div class="p-1 h-full overflow-y-auto no-scrollbar relative bg-gray-900">
-            {#if $photos.length === 0}
+        <div
+            class="p-1 h-full overflow-y-auto no-scrollbar relative bg-gray-900"
+        >
+            {#if $photosStore.length === 0}
                 <EmptyState title="No photos yet">
                     {#snippet icon()}
                         <EmptyPhotoIcon class="h-16 w-16" />
@@ -160,7 +164,7 @@
                 </EmptyState>
             {:else}
                 <div class="grid grid-cols-3 gap-1">
-                    {#each $photos as photo}
+                    {#each $photosStore as photo}
                         <!-- svelte-ignore a11y_click_events_have_key_events -->
                         <!-- svelte-ignore a11y_no_static_element_interactions -->
                         <div
@@ -170,10 +174,19 @@
                             <img
                                 src={photo.image}
                                 alt="Capture {photo.id}"
-                                class="w-full h-full object-cover transition-opacity {isSelectionMode && selectedIds.has(photo.id) ? 'opacity-50' : 'group-hover:opacity-80'}"
+                                class="w-full h-full object-cover transition-opacity {isSelectionMode &&
+                                selectedIds.has(photo.id)
+                                    ? 'opacity-50'
+                                    : 'group-hover:opacity-80'}"
                             />
                             {#if isSelectionMode}
-                                <div class="absolute bottom-2 right-2 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center {selectedIds.has(photo.id) ? 'bg-blue-500' : 'bg-black/20 backdrop-blur-sm'}">
+                                <div
+                                    class="absolute bottom-2 right-2 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center {selectedIds.has(
+                                        photo.id,
+                                    )
+                                        ? 'bg-blue-500'
+                                        : 'bg-black/20 backdrop-blur-sm'}"
+                                >
                                     {#if selectedIds.has(photo.id)}
                                         <CheckIcon class="h-4 w-4 text-white" />
                                     {/if}
@@ -185,13 +198,26 @@
             {/if}
 
             {#if isSelectionMode && selectedIds.size > 0}
-                <div class="absolute bottom-4 left-4 right-4 bg-gray-800/90 backdrop-blur-md rounded-2xl p-4 flex justify-between items-center shadow-2xl border border-gray-700" transition:fade>
-                    <span class="text-white font-medium">{selectedIds.size} Selected</span>
+                <div
+                    class="absolute bottom-4 left-4 right-4 bg-gray-800/90 backdrop-blur-md rounded-2xl p-4 flex justify-between items-center shadow-2xl border border-gray-700"
+                    transition:fade
+                >
+                    <span class="text-white font-medium"
+                        >{selectedIds.size} Selected</span
+                    >
                     <div class="flex gap-4">
-                        <button class="text-blue-400 hover:text-blue-300" aria-label="Share selected" onclick={shareSelected}>
+                        <button
+                            class="text-blue-400 hover:text-blue-300"
+                            aria-label="Share selected"
+                            onclick={shareSelected}
+                        >
                             <ShareSquareIcon class="h-5 w-5" />
                         </button>
-                        <button class="text-red-500 hover:text-red-400" aria-label="Delete selected" onclick={() => (showDeleteConfirm = true)}>
+                        <button
+                            class="text-red-500 hover:text-red-400"
+                            aria-label="Delete selected"
+                            onclick={() => (showDeleteConfirm = true)}
+                        >
                             <TrashIcon class="h-5 w-5" />
                         </button>
                     </div>

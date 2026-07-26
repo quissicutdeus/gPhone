@@ -23,6 +23,12 @@
     "paths": {
       "@shared/*": [
         "../shared/*"
+      ],
+      "@gphone/sdk": [
+        "./src/sdk/index.ts"
+      ],
+      "@gphone/sdk/*": [
+        "./src/sdk/*"
       ]
     }
   },
