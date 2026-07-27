@@ -7,7 +7,7 @@
   import { setSignal } from "./store/signal";
   import { currentApp, openApp, goHome, closePhone } from "./store/navigation";
   import { callStore } from "./store/call";
-  import { isTakingPhoto } from "./store/camera";
+  import { isTakingPhoto, isPreviewingPhoto } from "./store/camera";
   import PhoneFrame from "./components/PhoneFrame.svelte";
   import MockDevTools from "./components/MockDevTools.svelte";
   import { appRegistryStore } from "./store/registry";
@@ -43,17 +43,20 @@
       }
     } else if (action === "installApp" || action === "gphone:installApp") {
       if (data?.url) {
-        appRegistryStore.loadRemoteApp(data.url).then(({ manifest }) => {
-          toast.show({
-            type: "success",
-            message: `App '${manifest.name}' installed successfully`,
+        appRegistryStore
+          .loadRemoteApp(data.url)
+          .then(({ manifest }) => {
+            toast.show({
+              type: "success",
+              message: `App '${manifest.name}' installed successfully`,
+            });
+          })
+          .catch((err) => {
+            toast.show({
+              type: "error",
+              message: err.message || "Failed to install remote app",
+            });
           });
-        }).catch((err) => {
-          toast.show({
-            type: "error",
-            message: err.message || "Failed to install remote app",
-          });
-        });
       }
     } else if (action === "uninstallApp" || action === "gphone:uninstallApp") {
       if (data?.appId) {
@@ -101,20 +104,23 @@
       });
     } else if (action === "receiveContactShare" || action === "shareContact") {
       const handleAcceptContact = async () => {
-        const firstname = typeof data.firstname === "string" ? data.firstname.trim() : "";
+        const firstname =
+          typeof data.firstname === "string" ? data.firstname.trim() : "";
         const phone = typeof data.phone === "string" ? data.phone.trim() : "";
 
         if (!firstname || !phone) {
           toast.show({
             type: "error",
-            message: "Cannot add contact: missing required name or phone number",
+            message:
+              "Cannot add contact: missing required name or phone number",
           });
           return;
         }
 
         const payload = {
           firstname,
-          lastname: typeof data.lastname === "string" ? data.lastname.trim() : "",
+          lastname:
+            typeof data.lastname === "string" ? data.lastname.trim() : "",
           phone,
           email: typeof data.email === "string" ? data.email.trim() : undefined,
           avatar: typeof data.avatar === "string" ? data.avatar : undefined,
@@ -135,7 +141,10 @@
       };
 
       toast.showContactShare({
-        name: `${data.firstname || ""} ${data.lastname || ""}`.trim() || data.phone || "Contact",
+        name:
+          `${data.firstname || ""} ${data.lastname || ""}`.trim() ||
+          data.phone ||
+          "Contact",
         phone: data.phone || "",
         avatar: data.avatar,
         onAccept: handleAcceptContact,
@@ -297,18 +306,14 @@
 {#if visible}
   <main
     class="flex h-screen w-screen overflow-hidden p-12"
-    class:transition-all={!$isTakingPhoto}
-    class:duration-150={!$isTakingPhoto}
-    class:transition-none={$isTakingPhoto}
     class:items-center={$currentApp.name === "camera"}
     class:justify-center={$currentApp.name === "camera"}
     class:items-end={$currentApp.name !== "camera"}
     class:justify-end={$currentApp.name !== "camera"}
-    class:opacity-0={$isTakingPhoto}
     class:bg-transparent={true}
   >
     <PhoneFrame
-      transparent={$currentApp.name === "camera"}
+      transparent={$currentApp.name === "camera" && !$isPreviewingPhoto}
       onClose={() => {
         if (isBrowser()) {
           visible = false;
@@ -320,7 +325,9 @@
       {#if $currentApp.name === "home"}
         <Home {openApp} />
       {:else if appRegistryStore.getComponent($currentApp.name)}
-        {@const ActiveComponent = appRegistryStore.getComponent($currentApp.name)}
+        {@const ActiveComponent = appRegistryStore.getComponent(
+          $currentApp.name,
+        )}
         {#key $currentApp.name}
           <ErrorBoundary appName={$currentApp.name}>
             <ActiveComponent onback={goHome} {...$currentApp.props} />

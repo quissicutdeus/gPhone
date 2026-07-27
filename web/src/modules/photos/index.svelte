@@ -10,7 +10,13 @@
     import ConfirmDialog from "../../components/ConfirmDialog.svelte";
     import EmptyState from "../../components/EmptyState.svelte";
 
-    let { onback } = $props();
+    import { get } from "svelte/store";
+
+    let { onback, initialPhoto, initialPhotoId } = $props<{
+        onback?: () => void;
+        initialPhoto?: Photo;
+        initialPhotoId?: number;
+    }>();
 
     const { photosStore, deletePhoto } = useCamera();
 
@@ -20,8 +26,15 @@
     let isLoading = $state(false);
     let showDeleteConfirm = $state(false);
 
-    onAppMount(() => {
-        photosStore.load();
+    onAppMount(async () => {
+        await photosStore.load();
+        if (initialPhoto && !selectedPhoto) {
+            selectedPhoto = initialPhoto;
+        } else if (initialPhotoId && !selectedPhoto) {
+            const list = get(photosStore);
+            const found = list.find((p) => p.id === initialPhotoId);
+            if (found) selectedPhoto = found;
+        }
     });
 
     const toggleSelectionMode = () => {

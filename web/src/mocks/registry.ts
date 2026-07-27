@@ -1,10 +1,12 @@
-import { mockContacts, mockConversations, mockEmails, mockMessages, mockNotes, mockPhotos } from "./data";
+import { mockContacts, mockConversations, mockEmails, mockMessages, mockNotes, mockPhotos, sampleAvatars } from "./data";
 import type { Contact, Conversation, Mail, Message, Note, Photo } from "@shared/types";
 
 // Helper to simulate delays
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export type MockHandler<T = any> = (data?: any) => Promise<T> | T;
+
+let mockPhotoIndex = 5;
 
 export const mockRegistry: Record<string, MockHandler> = {
     // Contacts
@@ -178,7 +180,12 @@ export const mockRegistry: Record<string, MockHandler> = {
     "toggleSpeaker": async () => { return true; },
 
     // Camera & Photos
-    "takePhoto": () => "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", // 1x1 transparent pixel
+    "takePhoto": () => {
+        const photo = sampleAvatars[mockPhotoIndex % sampleAvatars.length];
+        mockPhotoIndex++;
+        return photo;
+    },
+    "flipCamera": async () => true,
     "onCameraApp": async () => true,
     "getPhotos": () => mockPhotos.filter(p => p.status !== 'deleted'),
     "createPhoto": async (photo: any) => {
