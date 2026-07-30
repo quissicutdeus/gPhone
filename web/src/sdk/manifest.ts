@@ -53,13 +53,14 @@ export function defineApp(manifest: AppManifest): AppManifest {
   }
 
   const isSystem = manifest.isSystem ?? (!manifest.isRemote && manifest.author !== "Community");
+  const author = manifest.author || (isSystem ? "gPhone" : "Community");
 
   return {
-    version: isSystem ? GPHONE_VERSION : (manifest.version || GPHONE_VERSION),
-    author: isSystem ? "gPhone" : (manifest.author || "Community"),
+    version: GPHONE_VERSION,
     permissions: [],
     defaultProps: {},
     isSystem,
+    author,
     ...manifest,
   };
 }

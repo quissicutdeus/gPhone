@@ -27,6 +27,7 @@ describe('gPhone SDK (@gphone/sdk)', () => {
         name: 'Crypto Tracker',
         color: 'bg-yellow-500',
         icon: 'BitcoinIcon',
+        author: 'Community',
       };
 
       const app = defineApp(rawManifest);
@@ -40,8 +41,8 @@ describe('gPhone SDK (@gphone/sdk)', () => {
       expect(app.defaultProps).toEqual({});
     });
 
-    it('exports GPHONE_VERSION and GPHONE_BUILD_INFO constants', () => {
-      const { GPHONE_VERSION, GPHONE_BUILD_INFO } = require('./index');
+    it('exports GPHONE_VERSION and GPHONE_BUILD_INFO constants', async () => {
+      const { GPHONE_VERSION, GPHONE_BUILD_INFO } = await import('./index');
       expect(GPHONE_VERSION).toBeDefined();
       expect(GPHONE_BUILD_INFO).toBeDefined();
     });
