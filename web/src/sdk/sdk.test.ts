@@ -40,6 +40,12 @@ describe('gPhone SDK (@gphone/sdk)', () => {
       expect(app.defaultProps).toEqual({});
     });
 
+    it('exports GPHONE_VERSION and GPHONE_BUILD_INFO constants', () => {
+      const { GPHONE_VERSION, GPHONE_BUILD_INFO } = require('./index');
+      expect(GPHONE_VERSION).toBeDefined();
+      expect(GPHONE_BUILD_INFO).toBeDefined();
+    });
+
     it('throws error when required manifest fields are missing', () => {
       expect(() => defineApp({ id: '', name: 'Test', color: 'red', icon: null } as any)).toThrow(
         "gPhone App Manifest error: 'id' is required"

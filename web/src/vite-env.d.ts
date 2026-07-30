@@ -6,3 +6,8 @@ declare module '*.svelte' {
     const component: ComponentType<SvelteComponent>;
     export default component;
 }
+
+declare const __GPHONE_VERSION__: string;
+declare const __GPHONE_BUILD_INFO__: string;
+declare const __GPHONE_GIT_BRANCH__: string;
+declare const __GPHONE_GIT_COMMIT__: string;
