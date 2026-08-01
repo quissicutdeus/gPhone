@@ -1,6 +1,11 @@
 <script lang="ts">
-  import { GPHONE_BUILD_INFO, useAccount, useAppRegistry, usePhoneNotification } from '@gphone/sdk';
-  import { formatDate } from '../../../utils/formatters';
+  import {
+    GPHONE_BUILD_INFO,
+    useAccount,
+    useAppRegistry,
+    usePhoneNotification,
+    formatDate
+  } from '@gphone/sdk';
 
   let { ontapbuild } = $props<{ ontapbuild: () => void }>();
 
