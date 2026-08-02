@@ -33,9 +33,7 @@ export default defineConfig({
   base: './',
   define: {
     __GPHONE_VERSION__: JSON.stringify(version),
-    __GPHONE_BUILD_INFO__: JSON.stringify(buildInfo),
-    __GPHONE_GIT_BRANCH__: JSON.stringify(gitInfo.branch),
-    __GPHONE_GIT_COMMIT__: JSON.stringify(gitInfo.commit)
+    __GPHONE_BUILD_INFO__: JSON.stringify(buildInfo)
   },
   resolve: {
     alias: {
